@@ -1,0 +1,135 @@
+html {
+  overflow:hidden;
+}
+
+.App {
+  background-color: #3492df;
+  overflow: hidden;
+}
+
+header {
+  text-align: center;
+  background: white;
+  padding: 15px;
+
+  display: inline-block;
+  border-radius: 5px;
+  border: 3px solid rgb(163, 156, 156);
+
+  width: max-content;
+  
+  position: absolute;
+  z-index: 1;
+
+  margin-top: -15px;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+header h1 {
+  display: inline-block;
+}
+
+header span {
+  display: none;
+  /* display: inline-block; */
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+header:hover span {
+  display: inline-block;
+}
+/* .header-button {
+
+} */
+/* header:hover {
+  z-index: -1;
+  display: none;
+} */
+
+#canvas {
+  box-shadow: 5px 5px 5px rgb(87, 79, 79);
+  /* border: dotted 3px black; */
+}
+
+.toolbar {
+  max-width: 80px;
+  display: inline-block;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  background-color: rgb(153, 139, 235);
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+}
+.toolbar-button {
+  border: none;
+  background-color: transparent;
+}
+.toolbar-button:hover {
+  background-color: #bbdefb;
+}
+#dropdown-basic::after {
+  content: none;
+}
+#dropdown-basic:focus{
+  outline: none;
+}
+.font-weight-bold{
+  font-weight:900
+}
+.text-red{
+  color: #ff0000;
+}
+.font-size-xl{
+  font-size: 40px;
+}
+.panel-height{
+  height: calc( 100vh - 220px );
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider-value-example {
+  /* display: absolute;
+  z-index: 5; */
+}
