@@ -4,60 +4,24 @@ import Toolbar from './Toolbar';
 import { useReducer } from 'react';
 
 import canvasReducer from "../reducer/reducer"
-// import { drawLine, combinePaths } from "../shared/paths"
 import Header from "./Header"
 import Cursor from './PresenceCursor';
+import { setupSubscriptions, room } from '../utils/symphony';
+import setupCanvasListeners from '../utils/canvasListeners';
 
-// import * as Y from 'yjs'
-// import { WebsocketProvider } from 'y-websocket'
-// import { IndexeddbPersistence } from 'y-indexeddb'
+import { 
+  DEFAULT_CURSOR_COLOR,
+  DEFAULT_BRUSH_WIDTH,
+  customCursorUrl 
+} from '../utils/constants';
 
-// const DEFAULT_IMAGE_WIDTH = 480;
-// const DEFAULT_IMAGE_SCALE = 0.15;
-// const DEFAULT_BRUSH_WIDTH = 0.02;
-// const DEFAULT_ERASER_WIDTH = 0.1;
+import { randName } from '../utils/canvasHelpers';
 
 const initialState = {
   canvas: null,
   color: "#f3f3f3",
   brushWidth: DEFAULT_BRUSH_WIDTH,
 }
-
-import setupYjsObservers, { awareness, ymap } from '../utils/yjs';
-import setupCanvasListeners from '../utils/canvasListeners';
-import { 
-  DEFAULT_CURSOR_COLOR,
-  DEFAULT_BRUSH_WIDTH, 
-  DEFAULT_IMAGE_WIDTH, 
-  DEFAULT_ERASER_WIDTH, 
-  DEFAULT_IMAGE_SCALE, 
-  customCursorUrl 
-} from '../utils/constants';
-
-import { randName } from '../utils/canvasHelpers';
-// const ydoc = new Y.Doc()
-
-// const websocketProvider = new WebsocketProvider(
-//   'ws://localhost:1234', 'test', ydoc
-// )
-
-// export const ymap = ydoc.getMap()
-
-// const indexeddbProvider = new IndexeddbPersistence('count-demo', ydoc)
-// indexeddbProvider.whenSynced.then(() => {
-//   // do something with indexDB
-// })
-
-// const findCanvasObject = (canvas, id) => {
-//   return canvas.getObjects().find(shape => shape.id === id);
-// }
-
-// const randName = () => {
-//   const num = Math.floor(Math.random() * 1000);
-//   return `user${num}`;
-// }
-
-// const awareness = websocketProvider.awareness;
 
 const Canvas = () => {
   const [state, dispatch] = useReducer(canvasReducer, initialState)
@@ -87,7 +51,7 @@ const Canvas = () => {
     canvas.groupsInAction = {};
 
     setupCanvasListeners(canvas)
-    setupYjsObservers(canvas, dispatch)
+    setupSubscriptions(canvas, dispatch)
 
     dispatch({type: "init", canvas,})
     return () => {
@@ -96,26 +60,25 @@ const Canvas = () => {
   }, []);
 
   useEffect(() => {
-    awareness.on('change', changes => {
-      const users = awareness.getStates().values();
-      const others = [...users].filter(user => {
-        if (!user.user) return;
-        return user.user.name !== name 
+    room.subscribe('others', () => {
+      const users = room.getOthers();
+      const others = [...users].filter(item => {
+        return item[1].user?.name !== name 
       });
-  
+
       if (!others.length) return;
   
-      const offsetCursors = others.map(({user}) => {
-        const {name, color} = user;
-  
-        const x = user.offsetX * window.innerWidth;
-        const y = user.offsetY * window.innerHeight;
+      const offsetCursors = others.map((user) => {
+        const {name, color} = user[1].user;
+
+        const x = user[1].user.offsetX * window.innerWidth;
+        const y = user[1].user.offsetY * window.innerHeight;
         return {name, color, x, y}
-      })
+      });
   
      setOthers(offsetCursors) 
     })
-  }, [name])
+  }, [name]);
   
   const handleCursorTracking = (e) => {
     const { clientX: x, clientY: y} = e
@@ -123,26 +86,31 @@ const Canvas = () => {
     const offsetX = x / window.innerWidth;
     const offsetY = y / window.innerHeight;
 
-    awareness.setLocalStateField('user', {
-      name,
-      color: cursorColor,
-      offsetX,
-      offsetY,
-    })
+    room.updatePresence({
+      user: {
+        name,
+        color: cursorColor,
+        offsetX,
+        offsetY,
+      }
+    });
   }
 
   const handleUserSettingsChange = (newVals) => {
-    console.log("handlign user settings change", {newVals})
+    console.log("handling user settings change", {newVals})
 
     const {color, name} = newVals
     if (!color || !name) return;
 
     setName(name);
     setCursorColor(color)
-    awareness.setLocalStateField('user', {
-      name,
-      color,
-    })
+
+    room.updatePresence({
+      user: {
+        name,
+        color,
+      }
+    });
   }
 
   return(
@@ -177,11 +145,8 @@ const Canvas = () => {
           id="canvas"
         />
       </div>
-
-      
     </div>
   )
-}
+};
 
-
-export default Canvas
+export default Canvas;

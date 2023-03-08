@@ -1,3 +1,5 @@
+import { fabric } from "fabric";
+
 export const drawLine = (start, end) => {
   console.log("in draw line", {start, end})
   const startX = start[0][1];

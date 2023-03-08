@@ -1,4 +1,5 @@
-import { ymap } from "./yjs";
+import { ymap } from "./symphony";
+import { drawLine, combinePaths } from "../shared/paths";
 
 export default (canvas) => {
   if (!canvas) return;

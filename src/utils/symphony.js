@@ -1,28 +1,17 @@
-import * as Y from 'yjs'
-import { WebsocketProvider } from 'y-websocket'
-import { IndexeddbPersistence } from 'y-indexeddb'
-
 import { fabric } from 'fabric';
-import { findCanvasObject } from './canvasHelpers'
-import { drawLine, combinePaths } from "../shared/paths"
+import { findCanvasObject } from './canvasHelpers';
+import { drawLine, combinePaths } from "../shared/paths";
 
-const ydoc = new Y.Doc()
+// symphony
+import { createClient } from '../symphony';
+const client = createClient('ws://localhost:1234');
+export const room = client.enter('my-room');
+export const ymap = room.newMap('my-map');
 
-const websocketProvider = new WebsocketProvider(
-  'ws://localhost:1234', 'test', ydoc
-)
+export const awareness = room.awareness;
 
-export const ymap = ydoc.getMap()
-
-const indexeddbProvider = new IndexeddbPersistence('count-demo', ydoc)
-indexeddbProvider.whenSynced.then(() => {
-  // do something with indexDB
-})
-
-export const awareness = websocketProvider.awareness;
-
-export default (canvas, dispatch) => {
-  ymap.observe(event => {
+export const setupSubscriptions = (canvas, dispatch) => {
+  room.subscribe(ymap, event => {
     if (event.transaction.local) return;
 
     // if (event.transaction.local) return;
@@ -59,7 +48,6 @@ export default (canvas, dispatch) => {
       if (key === 'newGroupSelection') {
         const {groupId, group, originalOffsetX, originalOffsetY} = ymap.get(key);
         // get og objects, cache original 
-        // console.log({groupId, group, originalOffsetX, originalOffsetY})
         if (!group || !groupId || !originalOffsetX || !originalOffsetY) return;
 
         const groupPosition = {originalOffsetX, originalOffsetY, objects: []};

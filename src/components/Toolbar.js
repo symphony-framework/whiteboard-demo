@@ -31,7 +31,7 @@ import DownloadIcon from '../assets/imgs/icons/Download.svg'
 
 import { Dropdown, Modal } from 'react-bootstrap';
 //import { ymap } from "./Canvas"
-import {ymap} from "../utils/yjs";
+import {ymap} from "../utils/symphony";
 
 import { shapeOptions, brushOptions } from '../utils/constants';
 

@@ -1,4 +1,4 @@
-export default ({ x, y, color, name }) => {
+const PresenceCursor = ({ x, y, color, name }) => {
   if (!x || !y) return;
   const cursorStyle = {
     position: "absolute",  
@@ -17,4 +17,6 @@ export default ({ x, y, color, name }) => {
       </svg>
     </span>
   );
-}
+};
+
+export default PresenceCursor;

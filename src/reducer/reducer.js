@@ -2,7 +2,7 @@ import { fabric } from "fabric";
 import { newSquare, newTriangle, newCircle, newText } from "../shared/draw";
 
 // import { ymap } from "../components/Canvas"
-import {ymap} from "../utils/yjs";
+import {ymap} from "../utils/symphony";
 
 const DEFAULT_IMAGE_WIDTH = 480;
 const DEFAULT_IMAGE_SCALE = 0.15

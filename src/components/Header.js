@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Modal, Button, Form } from 'react-bootstrap';
 
-import upArrow from "../assets/imgs/icons/up-arrow.png"
+// import upArrow from "../assets/imgs/icons/up-arrow.png"
 import { ColorPicker, useColor } from "react-color-palette";
 
-export default ({userCount, onUserSettingsChange, currentName, currentColor}) => {
+const Header = ({userCount, onUserSettingsChange, currentName, currentColor}) => {
   const [display, setDisplay] = useState(true)
-  const [msg, setMsg] = useState("")
+  // const [msg, setMsg] = useState("")
 
   const [changingName, setChangingName] = useState(false)
   const [name, setName] = useState(currentName || "")
 
-  const [colorShow, setColorShow] = useState(false);
+  // const [colorShow, setColorShow] = useState(false);
   const [color, setColor] = useColor("hex", currentColor);
 
   if (!display) return null;
@@ -51,7 +51,7 @@ export default ({userCount, onUserSettingsChange, currentName, currentColor}) =>
       (
       <>
         <Button variant="primary" onClick={showChangeNameInput}>
-          User Apperance
+          User Appearance
         </Button>
         {/* <Button variant="secondary" onClick={showColorChangeModal}>
           Change Cursor Color
@@ -62,7 +62,7 @@ export default ({userCount, onUserSettingsChange, currentName, currentColor}) =>
 
 
       <Modal show={changingName} fullscreen={"md-down"} onHide={handleNameFormClose}>
-        <Modal.Header closeButton>h
+        <Modal.Header closeButton>
             <Modal.Title>Change appearance</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -102,4 +102,6 @@ export default ({userCount, onUserSettingsChange, currentName, currentColor}) =>
       </Modal>
     </header>
   )
-}
+};
+
+export default Header;
