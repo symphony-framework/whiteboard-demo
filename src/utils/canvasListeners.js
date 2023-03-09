@@ -1,4 +1,5 @@
-import { ymap } from "./yjs";
+import { syncedMap } from "./symphony.config";
+import { drawLine, combinePaths } from "../shared/paths";
 
 export default (canvas) => {
   if (!canvas) return;
@@ -15,7 +16,7 @@ export default (canvas) => {
 
     // handle single object movement
     if (id && !multiSelect) {
-      ymap.set("newPosition", {id, offsetX, offsetY})
+      syncedMap.set("newPosition", {id, offsetX, offsetY})
       return;
     }
 
@@ -29,13 +30,13 @@ export default (canvas) => {
       }
 
       options.target.id = groupId
-      ymap.set('newGroupMovement', {group, groupId, offsetX, offsetY})
+      syncedMap.set('newGroupMovement', {group, groupId, offsetX, offsetY})
     }
 
     // handle additional movement of existing group
     if (id && multiSelect) {
       const group = multiSelect.map(obj => obj.id);
-      ymap.set('newGroupMovement', {group, groupId: canvas.multiSelectId, offsetX, offsetY})
+      syncedMap.set('newGroupMovement', {group, groupId: canvas.multiSelectId, offsetX, offsetY})
     }
     return;
   })
@@ -72,7 +73,7 @@ export default (canvas) => {
   //     const originalOffsetX = left / canvas.width;
   //     const originalOffsetY = top / canvas.height;
 
-  //     ymap.set('newGroupSelection', {groupId, group, originalOffsetX, originalOffsetY})
+  //     syncedMap.set('newGroupSelection', {groupId, group, originalOffsetX, originalOffsetY})
   //   }
   // })
   
@@ -85,7 +86,7 @@ export default (canvas) => {
     canvas.multiSelectId = groupId;
     return;
     // const group = selected.map(selection => selection.id);
-    // ymap.set('newGroupSelection', {group, groupId})
+    // syncedMap.set('newGroupSelection', {group, groupId})
   })
 
   canvas.on('selection:cleared', function(options) {
@@ -97,7 +98,7 @@ export default (canvas) => {
 
     if (!groupId) return; 
 
-    ymap.set('clearGroupSelection', {groupId});
+    syncedMap.set('clearGroupSelection', {groupId});
     return;
   })
 
@@ -121,7 +122,7 @@ export default (canvas) => {
       const originalOffsetX = left / canvas.width;
       const originalOffsetY = top / canvas.height;
 
-      ymap.set('newGroupSelection', {groupId, group, originalOffsetX, originalOffsetY})
+      syncedMap.set('newGroupSelection', {groupId, group, originalOffsetX, originalOffsetY})
       return;
     }
 
@@ -141,12 +142,12 @@ export default (canvas) => {
     //       }
     //     })
 
-    //     ymap.set("newErase", {id: eraseId, points})
+    //     syncedMap.set("newErase", {id: eraseId, points})
     //     return;
     // }
 
     if (canvas.isDrawingMode) {
-      const {freeDrawingBrush, freeDrawingCursor} = canvas;
+      const {freeDrawingBrush} = canvas;
       if (freeDrawingBrush.type === 'eraser') return;
 
       const {_points , width, color, } = freeDrawingBrush;
@@ -162,11 +163,11 @@ export default (canvas) => {
         }
       })
       
-      ymap.set("newDrawing", {id: drawId, points, width, color})
+      syncedMap.set("newDrawing", {id: drawId, points, width, color})
     }
   })
 
-  canvas.on('mouse:move', function(options) {
+  canvas.on('mouse:move', function() {
     // if (canvas.isCurrentlyErasing) {
     //   const {freeDrawingBrush} = canvas;
 
@@ -183,7 +184,7 @@ export default (canvas) => {
     //     }
     //   })
 
-    //   ymap.set("erasing", {id, points, width})
+    //   syncedMap.set("erasing", {id, points, width})
     //   return
     // }
 
@@ -202,7 +203,7 @@ export default (canvas) => {
         }
       })
 
-      ymap.set("drawing", {id, points, width, color})
+      syncedMap.set("drawing", {id, points, width, color})
       // stream update, mouse position, relative, and points? 
     }
   })
@@ -345,7 +346,7 @@ export default (canvas) => {
 //             });
 
 //             console.log({group})
-//             ymap.set('updateGroupPositionsCache', {groupId, group, originalOffsetX, originalOffsetY})
+//             syncedMap.set('updateGroupPositionsCache', {groupId, group, originalOffsetX, originalOffsetY})
 
           canvas.discardActiveObject();
           canvas.renderAll();
@@ -392,11 +393,11 @@ export default (canvas) => {
 
         canvas.remove(options.currentTarget)
         canvas.add(newLinePath)
-        ymap.set('finishLine', { id, color, width});
+        syncedMap.set('finishLine', { id, color, width});
         return;
       }
 
-      if (type === 'draw') ymap.set("finishDrawing", {id, color, width})
+      if (type === 'draw') syncedMap.set("finishDrawing", {id, color, width})
     }
   })
 
@@ -408,13 +409,12 @@ export default (canvas) => {
     const offsetX = left / canvas.width
     const offsetY = top / canvas.height
 
-    const { transform, target } = options
-    ymap.set("rotate", {id, angle, offsetX, offsetY})
+    // const { transform, target } = options
+    syncedMap.set("rotate", {id, angle, offsetX, offsetY})
 
-    const multiSelect = options.target._objects;
-
-    const {left: oldLeft, top: oldTop} = options.transform.original
-    const { action, corner, } = options.transform;
+    // const multiSelect = options.target._objects;
+    // const {left: oldLeft, top: oldTop} = options.transform.original
+    // const { action, corner, } = options.transform;
   })
 
   canvas.on('object:scaling', function(options) {
@@ -436,20 +436,11 @@ export default (canvas) => {
       const offsetX = cornerPos / canvas.width;
 
       if (!multiSelect) {
-        ymap.set(action, {id, scaleX, offsetX, flipX})
+        syncedMap.set(action, {id, scaleX, offsetX, flipX})
         return;
       }
 
-      // if (flipX || flipY) {
-      //   canvas.discardActiveObject();
-      //   options.event.preventDefault();
-      //   options.event.stopPropagation();
-
-      //   canvas.renderAll()
-      //   return;
-      // }
-
-      ymap.set("newGroupScaleX", {corner, groupId: canvas.multiSelectId, scaleX, offsetX, flipX, width: width / canvas.width})
+      syncedMap.set("newGroupScaleX", {corner, groupId: canvas.multiSelectId, scaleX, offsetX, flipX, width: width / canvas.width})
       return;
     }
 
@@ -458,20 +449,11 @@ export default (canvas) => {
       const offsetY = cornerPos / canvas.height;
 
       if (!multiSelect) {
-        ymap.set(action, {id, scaleY, offsetY, flipY});
+        syncedMap.set(action, {id, scaleY, offsetY, flipY});
         return;
       }
 
-      // if (flipX) {
-      //   options.event.preventDefault();
-      //   options.target.set('flipX', false)
-      //   options.target.setCoords
-      //   // options.event.stopPropagation();
-      //   return;
-      // }
-
-
-      ymap.set("newGroupScaleY", {corner, groupId: canvas.multiSelectId, scaleY, offsetY, flipY, height: height / canvas.height})
+      syncedMap.set("newGroupScaleY", {corner, groupId: canvas.multiSelectId, scaleY, offsetY, flipY, height: height / canvas.height})
       return;
     } 
 
@@ -483,21 +465,11 @@ export default (canvas) => {
       const offsetY = yCorner / canvas.height;
 
       if (!multiSelect) {
-        ymap.set(action, {id, scaleY, scaleX, offsetY, offsetX, flipX, flipY})
+        syncedMap.set(action, {id, scaleY, scaleX, offsetY, offsetX, flipX, flipY})
         return;
       }  
 
-      // if (flipX || flipY) {
-      //   // canvas.discardActiveObject();
-      //   canvas.discardActiveGroup()
-      //   options.event.preventDefault();
-      //   options.event.stopPropagation();
-
-      //   canvas.renderAll()
-      //   return;
-      // }
-
-      ymap.set("newGroupScale", {
+      syncedMap.set("newGroupScale", {
         corner, groupId: canvas.multiSelectId, 
         scaleY, scaleX, offsetY, offsetX, flipX, flipY, 
         width: width  / canvas.width, height: height / canvas.height

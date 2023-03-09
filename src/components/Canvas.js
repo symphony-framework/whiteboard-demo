@@ -4,63 +4,22 @@ import Toolbar from './Toolbar';
 import { useReducer } from 'react';
 
 import canvasReducer from "../reducer/reducer"
-// import { drawLine, combinePaths } from "../shared/paths"
 import Header from "./Header"
 import Cursor from './PresenceCursor';
 
-// import * as Y from 'yjs'
-// import { WebsocketProvider } from 'y-websocket'
-// import { IndexeddbPersistence } from 'y-indexeddb'
-
-// const DEFAULT_IMAGE_WIDTH = 480;
-// const DEFAULT_IMAGE_SCALE = 0.15;
-// const DEFAULT_BRUSH_WIDTH = 0.02;
-// const DEFAULT_ERASER_WIDTH = 0.1;
-
-const initialState = {
-  canvas: null,
-  color: "#f3f3f3",
-  brushWidth: DEFAULT_BRUSH_WIDTH,
-}
-
-import setupYjsObservers, { awareness, ymap } from '../utils/yjs';
+import setupYjsObservers, { room } from '../utils/symphony.config';
 import setupCanvasListeners from '../utils/canvasListeners';
+
 import { 
+  INITIAL_STATE,
   DEFAULT_CURSOR_COLOR,
-  DEFAULT_BRUSH_WIDTH, 
-  DEFAULT_IMAGE_WIDTH, 
-  DEFAULT_ERASER_WIDTH, 
-  DEFAULT_IMAGE_SCALE, 
   customCursorUrl 
 } from '../utils/constants';
 
 import { randName } from '../utils/canvasHelpers';
-// const ydoc = new Y.Doc()
-
-// const websocketProvider = new WebsocketProvider(
-//   'ws://localhost:1234', 'test', ydoc
-// )
-
-// export const ymap = ydoc.getMap()
-
-// const indexeddbProvider = new IndexeddbPersistence('count-demo', ydoc)
-// indexeddbProvider.whenSynced.then(() => {
-//   // do something with indexDB
-// })
-
-// const findCanvasObject = (canvas, id) => {
-//   return canvas.getObjects().find(shape => shape.id === id);
-// }
-
-// const randName = () => {
-//   const num = Math.floor(Math.random() * 1000);
-//   return `user${num}`;
-// }
-
-// const awareness = websocketProvider.awareness;
 
 const Canvas = () => {
-  const [state, dispatch] = useReducer(canvasReducer, initialState)
+  const [state, dispatch] = useReducer(canvasReducer, INITIAL_STATE)
 
   const [cursorColor, setCursorColor] = useState(DEFAULT_CURSOR_COLOR)
   const [name, setName] = useState(randName())
@@ -96,8 +55,10 @@ const Canvas = () => {
   }, []);
 
   useEffect(() => {
-    awareness.on('change', changes => {
-      const users = awareness.getStates().values();
+    console.log("presence")
+    room.subscribe('others', () => {
+      const users = room.getOthers().values();
+      console.log({users})
       const others = [...users].filter(user => {
         if (!user.user) return;
         return user.user.name !== name 
@@ -116,6 +77,11 @@ const Canvas = () => {
      setOthers(offsetCursors) 
     })
   }, [name])
+
+  // useEffect(() => {
+  //   window.addEventListener('keydown', handleUndoRedo);
+    
+  // }, [])
   
   const handleCursorTracking = (e) => {
     const { clientX: x, clientY: y} = e
@@ -123,27 +89,46 @@ const Canvas = () => {
     const offsetX = x / window.innerWidth;
     const offsetY = y / window.innerHeight;
 
-    awareness.setLocalStateField('user', {
-      name,
-      color: cursorColor,
-      offsetX,
-      offsetY,
+    room.updatePresence({
+      user: {
+        name,
+        color: cursorColor,
+        offsetX,
+        offsetY,
+      }
     })
   }
 
   const handleUserSettingsChange = (newVals) => {
-    console.log("handlign user settings change", {newVals})
+    console.log("handling user settings change", {newVals})
 
     const {color, name} = newVals
     if (!color || !name) return;
 
     setName(name);
     setCursorColor(color)
-    awareness.setLocalStateField('user', {
-      name,
-      color,
-    })
+    room.updatePresence({
+      user: {
+        name,
+        color,
+      }
+  })
+    
   }
+
+  // const handleUndoRedo = (e) => {
+  //   const { ctrlKey, key } = e;
+
+  //   if (!key || !ctrlKey) return;
+
+  //   if (/z/.test(key)) {
+  //     undoManager.undo()
+  //   }
+
+  //   if (/y/.test(key)) {
+  //     undoManager.redo();
+  //   }
+  // }
 
   return(
     <div

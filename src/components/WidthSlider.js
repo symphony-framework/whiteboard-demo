@@ -1,4 +1,3 @@
-import ReactSlider from "react-slider";
 import { useState } from "react"    
 
 const DEFAULT = 2;
@@ -12,7 +11,7 @@ const Slider = ({onWidthChange, currentVal}) => {
     setValue(Number(e.target.value))
   }
 
-  const handleSliderRelease = (e) => {
+  const handleSliderRelease = () => {
     if (value === currentVal) return;
     const width = value / 100;
     console.log("handle width slider", {width})

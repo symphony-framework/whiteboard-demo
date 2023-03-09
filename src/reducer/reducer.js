@@ -1,16 +1,12 @@
 import { fabric } from "fabric";
 import { newSquare, newTriangle, newCircle, newText } from "../shared/draw";
 
-// import { ymap } from "../components/Canvas"
-import {ymap} from "../utils/yjs";
+import {syncedMap} from "../utils/symphony.config";
 
-const DEFAULT_IMAGE_WIDTH = 480;
-const DEFAULT_IMAGE_SCALE = 0.15
-const DEFAULT_ERASER_WIDTH = 0.1;
+// import { DEFAULT_CANVAS_BACKGROUND, DEFAULT_ERASE_WIDTH } from "../utils/constants";
+import { DEFAULT_IMAGE_WIDTH, DEFAULT_IMAGE_SCALE } from "../utils/constants";
 
-const DEFAULT_CANVAS_BACKGROUND = "#f3f3f3"
-
-export default (state, action) => {
+const Reducer = (state, action) => {
   const { type } = action;
 
   if (type === 'init') {
@@ -72,9 +68,7 @@ export default (state, action) => {
 
     let newShape;
     state.canvas.isDrawingMode = false;
-
-    const { width, height } = state.canvas
-
+    
     switch (action.shape) {
       case "square":
         newShape = newSquare(action.color, action.id, state.canvas);
@@ -130,14 +124,14 @@ export default (state, action) => {
         const { id } = element;
         state.canvas.remove(element)
 
-        if (id) ymap.set('removeObject', {id})
+        if (id) syncedMap.set('removeObject', {id})
       })
 
     } else {
       state.canvas.remove(selected)
       const { id } = selected;
 
-      if (id) ymap.set("removeObject", {id})
+      if (id) syncedMap.set("removeObject", {id})
     }
 
     state.canvas.discardActiveObject();
@@ -176,3 +170,5 @@ export default (state, action) => {
     return {...state};
   }
 }
+
+export default Reducer;

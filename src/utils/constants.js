@@ -5,11 +5,20 @@ import SquareIcon from '../assets/imgs/icons/Square.png'
 import TriangleIcon from '../assets/imgs/icons/Triangle.png'
 import CircleIcon from '../assets/imgs/icons/Circle.png'
 
+
+export const DEFAULT_CANVAS_BACKGROUND = "#f3f3f3"
+
 export const DEFAULT_CURSOR_COLOR = '#ffb61e';
 export const DEFAULT_IMAGE_WIDTH = 480;
 export const DEFAULT_IMAGE_SCALE = 0.15;
 export const DEFAULT_BRUSH_WIDTH = 0.02;
 export const DEFAULT_ERASER_WIDTH = 0.1;
+
+export const INITIAL_STATE = {
+  canvas: null,
+  color: "#f3f3f3",
+  brushWidth: DEFAULT_BRUSH_WIDTH,
+}
 
 export const shapeOptions = [
   {name: 'square', icon: SquareIcon},

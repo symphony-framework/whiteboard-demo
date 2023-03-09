@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useReducer } from "react";
+import React, { useState } from 'react';
 import { fabric } from "fabric";
 
 import WidthSlider from "./WidthSlider";
@@ -8,43 +7,26 @@ import { ColorPicker, useColor } from "react-color-palette";
 import "react-color-palette/lib/css/styles.css";
 
 import BrushIcon from '../assets/imgs/icons/Brush.svg';
-// import StraightBrushIcon from '../assets/imgs/icons/StraightBrush.png';
-// import WavyBrushIcon from '../assets/imgs/icons/WavyBrush.png';
 
 import CursorIcon from '../assets/imgs/icons/Cursor.svg';
-import GlassIcon from '../assets/imgs/props/glass.svg';
 import TextIcon from '../assets/imgs/icons/T.svg';
 import ColorIcon from '../assets/imgs/icons/color.png';
-import SprayIcon from '../assets/imgs/icons/Spray.svg';
+// import SprayIcon from '../assets/imgs/icons/Spray.svg';
 import ImageIcon from '../assets/imgs/icons/Image.svg';
-import EraseIcon from '../assets/imgs/icons/Eraser.svg';
+// import EraseIcon from '../assets/imgs/icons/Eraser.svg';
 import ClearIcon from '../assets/imgs/icons/Clear.svg';
 
 import ShapeIcon from '../assets/imgs/icons/Shape.svg';
-// import SquareIcon from '../assets/imgs/icons/Square.png'
-// import TriangleIcon from '../assets/imgs/icons/Triangle.png'
-// import CircleIcon from '../assets/imgs/icons/Circle.png'
 
 
 import DownloadIcon from '../assets/imgs/icons/Download.svg'
 
 
 import { Dropdown, Modal } from 'react-bootstrap';
-//import { ymap } from "./Canvas"
-import {ymap} from "../utils/yjs";
+//import { syncedMap } from "./Canvas"
+import {syncedMap} from "../utils/symphony.config";
 
 import { shapeOptions, brushOptions } from '../utils/constants';
-
-// const shapeOptions = [
-//     {name: 'square', icon: SquareIcon},
-//     {name: 'triangle', icon: TriangleIcon},
-//     {name: 'circle', icon: CircleIcon}
-// ]
-
-// const brushOptions = [
-//     {name: 'line', icon: StraightBrushIcon},
-//     {name: 'draw', icon: WavyBrushIcon},    
-// ]
 
 const Toolbar = ({state, dispatch}) => {
     const [color, setColor] = useColor("hex", "#121212");
@@ -70,7 +52,7 @@ const Toolbar = ({state, dispatch}) => {
             dispatch(({type:"image/upload", image, id, creator: true}))
 
             const imageUrl = image.toDataURL();
-            ymap.set("image/upload", {imageUrl, id})
+            syncedMap.set("image/upload", {imageUrl, id})
           }, { crossOrigin: 'anonymous' });
         }
     };
@@ -95,7 +77,7 @@ const Toolbar = ({state, dispatch}) => {
                 setSelectedTool("shape");
                 const id = Date.now();
                 dispatch({type: "shape", color: color.hex, shape, id, creator: true})
-                ymap.set('newShape', {color: color.hex, shape, id })
+                syncedMap.set('newShape', {color: color.hex, shape, id })
             }
         },
         {
@@ -138,7 +120,7 @@ const Toolbar = ({state, dispatch}) => {
                 setSelectedTool('text') 
 
                 dispatch({type: "text", color: color.hex, id, creator: true}) 
-                ymap.set('newText', {color: color.hex, id })
+                syncedMap.set('newText', {color: color.hex, id })
             }
         },
         {

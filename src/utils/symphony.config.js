@@ -1,34 +1,33 @@
-import * as Y from 'yjs'
-import { WebsocketProvider } from 'y-websocket'
-import { IndexeddbPersistence } from 'y-indexeddb'
+// import * as Y from 'yjs'
+// import { WebsocketProvider } from 'y-websocket'
+// import { IndexeddbPersistence } from 'y-indexeddb'
 
 import { fabric } from 'fabric';
 import { findCanvasObject } from './canvasHelpers'
 import { drawLine, combinePaths } from "../shared/paths"
 
-const ydoc = new Y.Doc()
+import { SymphonyClient } from "../symphony/index.js";
 
-const websocketProvider = new WebsocketProvider(
-  'ws://localhost:1234', 'test', ydoc
-)
+const WS_URL = "ws://localhost:1234"
+const client = new SymphonyClient(WS_URL);
 
-export const ymap = ydoc.getMap()
-
-const indexeddbProvider = new IndexeddbPersistence('count-demo', ydoc)
-indexeddbProvider.whenSynced.then(() => {
-  // do something with indexDB
-})
-
-export const awareness = websocketProvider.awareness;
+export const room = client.enter('room-test');
+export const syncedMap = room.newMap();
 
 export default (canvas, dispatch) => {
-  ymap.observe(event => {
+  syncedMap.observe(event => {
+
+    // if (event.transaction.origin instanceof Y.UndoManager) {
+    //   console.log({tran: event.transaction})
+    //   return;
+    // }
+
     if (event.transaction.local) return;
 
     // if (event.transaction.local) return;
     event.keysChanged.forEach(key => {
       if (key === 'newShape') {
-        const newShape = ymap.get('newShape')
+        const newShape = syncedMap.get('newShape')
         const {shape, color, id} = newShape
         if (!shape || !color || !id) return;
   
@@ -36,7 +35,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "newText") {
-        const newText = ymap.get('newText');
+        const newText = syncedMap.get('newText');
         const {color, id} = newText;
 
         if (!color || !id) return;
@@ -44,7 +43,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "newPosition") {
-        const {id, offsetX, offsetY} = ymap.get("newPosition")
+        const {id, offsetX, offsetY} = syncedMap.get("newPosition")
         if (!id || !offsetX || !offsetY ) return;
         
         const movedObj = findCanvasObject(canvas, id)
@@ -57,7 +56,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === 'newGroupSelection') {
-        const {groupId, group, originalOffsetX, originalOffsetY} = ymap.get(key);
+        const {groupId, group, originalOffsetX, originalOffsetY} = syncedMap.get(key);
         // get og objects, cache original 
         // console.log({groupId, group, originalOffsetX, originalOffsetY})
         if (!group || !groupId || !originalOffsetX || !originalOffsetY) return;
@@ -84,14 +83,14 @@ export default (canvas, dispatch) => {
       }
 
       if (key === 'clearGroupSelection') {
-        const {groupId} = ymap.get(key);
+        const {groupId} = syncedMap.get(key);
         if (!groupId) return;
         console.log("CLEARING GROUP SELECTION YJS")
         delete canvas.groupsInAction[groupId];
       }
 
       if (key === "newGroupMovement") {
-        const {group, groupId, offsetX, offsetY} = ymap.get("newGroupMovement")
+        const {group, groupId, offsetX, offsetY} = syncedMap.get("newGroupMovement")
 
         if (!group || !groupId || !offsetX || !offsetY) return;
         const groupObject = canvas.groupsInAction[groupId];
@@ -99,7 +98,7 @@ export default (canvas, dispatch) => {
         if (!groupObject) return;
         
 
-        const { originalOffsetX, originalOffsetY, objects } = groupObject
+        const { originalOffsetX, originalOffsetY } = groupObject
         const xChange = offsetX - originalOffsetX;
         const yChange = offsetY - originalOffsetY
             
@@ -128,7 +127,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "scaleX") {
-        const {id, offsetX, scaleX, flipX} = ymap.get("scaleX")
+        const {id, offsetX, scaleX, flipX} = syncedMap.get("scaleX")
 
         if (!id || !scaleX || !offsetX) return;
 
@@ -146,7 +145,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "scaleY") {
-        const {id, offsetY, scaleY, flipY} = ymap.get("scaleY")
+        const {id, offsetY, scaleY, flipY} = syncedMap.get("scaleY")
 
         if (!id || !scaleY || !offsetY) return;
 
@@ -163,7 +162,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "scale") {
-        const {id, scaleY, scaleX, offsetY, offsetX, flipX, flipY} = ymap.get("scale")
+        const {id, scaleY, scaleX, offsetY, offsetX, flipX, flipY} = syncedMap.get("scale")
         
         if (!id || !scaleX || !offsetX || !scaleY || !offsetY) return;
 
@@ -187,7 +186,7 @@ export default (canvas, dispatch) => {
 
       if (key === 'newGroupScaleX') { 
   
-        const {corner, groupId, scaleX, offsetX, flipX, width} = ymap.get(key);
+        const {corner, groupId, scaleX, offsetX, flipX, width} = syncedMap.get(key);
         
         const groupObject = canvas.groupsInAction[groupId];
         if (!groupObject) return;
@@ -244,7 +243,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === 'newGroupScaleY') {
-        const {corner, groupId, scaleY, offsetY, flipY, height} = ymap.get(key);
+        const {corner, groupId, scaleY, offsetY, flipY, height} = syncedMap.get(key);
         
         const groupObject = canvas.groupsInAction[groupId];
         if (!groupObject) return;
@@ -304,10 +303,10 @@ export default (canvas, dispatch) => {
 
       if (key === 'newGroupScale') {
         const {
-          corner, groupId, 
+          groupId, 
           scaleY, scaleX, offsetY, offsetX, flipX, flipY, 
           width, height
-        } = ymap.get("newGroupScale")
+        } = syncedMap.get("newGroupScale")
 
         if (!scaleY || !scaleX || !groupId || !offsetX || !offsetY) return;
         const groupObject = canvas.groupsInAction[groupId];
@@ -466,7 +465,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === 'updateGroupPositionsCache') {
-        const {groupId, group, originalOffsetX, originalOffsetY} = ymap.get(key);
+        const {groupId, group, originalOffsetX, originalOffsetY} = syncedMap.get(key);
         console.log("GROUP YJS UPDATE", {groupId, group, originalOffsetX, originalOffsetY})
         // get og objects, cache original 
         // console.log({groupId, group, originalOffsetX, originalOffsetY})
@@ -493,13 +492,13 @@ export default (canvas, dispatch) => {
           const { objOffsetX, objOffsetY } = obj;
           console.log("remote obj offsets", {targetObject, objOffsetX, objOffsetY})
 
-         if (targetObject.flipX) {
+        //  if (targetObject.flipX) {
 
-         }
+        //  }
 
-         if (targetObject.flipY) {
+        //  if (targetObject.flipY) {
 
-         }
+        //  }
         })
 
         console.log("group yjs cache update2", {cachedGroup, canvas})
@@ -507,7 +506,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "rotate") {
-        const { id, angle, offsetX, offsetY } = ymap.get('rotate');
+        const { id, angle, offsetX, offsetY } = syncedMap.get('rotate');
         const object = findCanvasObject(canvas, id)
         if (!object) return;
 
@@ -518,7 +517,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "removeObject") {
-        const { id } = ymap.get("removeObject")
+        const { id } = syncedMap.get("removeObject")
         if (!id) return; 
 
         const object = findCanvasObject(canvas, id)
@@ -531,7 +530,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "newDrawing") {
-        const {id, points, color, width} = ymap.get("newDrawing")
+        const {id, points, color, width} = syncedMap.get("newDrawing")
 
         const offsetPoints = points.map(point => {
           return {
@@ -552,7 +551,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "drawing") {
-        const {id, points, color, width} = ymap.get("drawing");
+        const {id, points, color, width} = syncedMap.get("drawing");
         
         const offsetPoints = points.map(point => {
           return {
@@ -703,7 +702,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === "finishDrawing") {
-        const {id, width, color } = ymap.get("finishDrawing");
+        const {id, width, color } = syncedMap.get("finishDrawing");
 
         if (!id || !width || !color) return;
         const getPaths = () => {
@@ -734,7 +733,7 @@ export default (canvas, dispatch) => {
       }
 
       if (key === 'finishLine') {
-        const { id, width, color } = ymap.get("finishLine");
+        const { id, width, color } = syncedMap.get("finishLine");
 
         if (!id || !width || !color) return;
 
@@ -765,7 +764,7 @@ export default (canvas, dispatch) => {
       }
       
     // if (key === 'newErase') {
-      //   const {id, points} = ymap.get("newDrawing")
+      //   const {id, points} = syncedMap.get("newDrawing")
 
       //   if (!id || !points) return;
 
@@ -788,7 +787,7 @@ export default (canvas, dispatch) => {
       // }
 
       // if (key === 'erasing') {
-      //   const {id, points, color} = ymap.get("newDrawing")
+      //   const {id, points, color} = syncedMap.get("newDrawing")
 
       //   if (!id || !points) return;
 
@@ -812,7 +811,7 @@ export default (canvas, dispatch) => {
     // }
       
       if (key === 'image/upload') {
-        const { imageUrl, id } = ymap.get('image/upload');
+        const { imageUrl, id } = syncedMap.get('image/upload');
 
         fabric.Image.fromURL(imageUrl, image => {
           dispatch({type: "image/upload", image, id, creator: false})
@@ -823,4 +822,17 @@ export default (canvas, dispatch) => {
     return;
   })
 
+
+    // undoManager.on('stack-item-added', event => {
+  //   console.log("undo event")
+  //   console.log("stack item added to undo", event.stackItem)
+  //   console.log({item: event.stackItem, event})
+  //   // event.stopPropagation();
+  // })
+  
+  // undoManager.on('stack-item-popped', event => {
+  //   console.log("stack item removed form undo", event.stackItem)
+  //   console.log({item: event.stackItem, event})
+
+  // })
 }

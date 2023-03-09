@@ -1,22 +1,11 @@
 //Draw Rect
 import { fabric } from "fabric";
 
-// const OFFSETPERCENT = .2;
-
-// const offsetTop = (height) => {
-//   return height * OFFSETPERCENT;
-// };
-
-// const offsetLeft = (width) => {
-//   return width * OFFSETPERCENT;
-// };
-
-import { OFFSETPERCENT, offsetLeft, offsetTop } from "../utils/constants";
+import { offsetLeft, offsetTop } from "../utils/constants";
 
 export const newSquare = (color, id, canvas) => {
     const left = offsetLeft(canvas.width);
     const top = offsetTop(canvas.height);
-    const size = 0.1;
 
     const width = canvas.width * 0.1
 
