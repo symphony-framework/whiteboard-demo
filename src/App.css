@@ -7,8 +7,23 @@ html {
   overflow: hidden;
 }
 
-header {
+header.show {
+  position: absolute;
+  z-index: 1;
+  background-color: rgb(206, 199, 245);
+
+  top: 10px;
+  /* left:0; */
+  right: 10px;
+  /* margin-left:auto; */
+  margin-right:auto;
+
+
+  max-width: 40%;
+  border-radius: 5px;
   text-align: center;
+  
+  /* text-align: center;
   background: white;
   padding: 15px;
 
@@ -25,25 +40,64 @@ header {
   left:0;
   right:0;
   margin-left:auto;
-  margin-right:auto;
+  margin-right:auto; */
 }
 
-header h1 {
+header.show h1 {
   display: inline-block;
+  padding: 0 10px;
 }
 
-header span {
+header.show .user-count {
+  padding: 0 10px;
+}
+
+header.show span {
   display: none;
   /* display: inline-block; */
   position: absolute;
-  bottom: 0;
+  bottom: -25px;
   right: 0;
+
   font-size: 20px;
   cursor: pointer;
 }
 
-header:hover span {
+header.hidden {
+  /* margin-top: -15px;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto; */
+  /* display: block;
+  margin-top: -15px;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto; */
+  position: absolute;
+  z-index: 3;
+  border: 0px;
+  padding: none;
+  top: 10px;
+  right: 10px;
+}
+
+button.show-header {
+  border-radius: 5px;
+  background-color: rgb(153, 139, 235);
+    border: transparent;  
+}
+
+header.show:hover span {
   display: inline-block;
+}
+
+header.show img {
+}
+
+div.other-user-card {
+  padding: 0px;
 }
 /* .header-button {
 

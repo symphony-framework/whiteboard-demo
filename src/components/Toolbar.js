@@ -24,7 +24,7 @@ import DownloadIcon from '../assets/imgs/icons/Download.svg'
 
 import { Dropdown, Modal } from 'react-bootstrap';
 //import { syncedMap } from "./Canvas"
-import {syncedMap} from "../utils/symphony.config";
+// import {syncedMap} from "../utils/symphony.config";
 
 import { shapeOptions, brushOptions } from '../utils/constants';
 
@@ -50,9 +50,6 @@ const Toolbar = ({state, dispatch}) => {
             
           fabric.Image.fromURL(objectUrl, image => {
             dispatch(({type:"image/upload", image, id, creator: true}))
-
-            const imageUrl = image.toDataURL();
-            syncedMap.set("image/upload", {imageUrl, id})
           }, { crossOrigin: 'anonymous' });
         }
     };
@@ -77,7 +74,7 @@ const Toolbar = ({state, dispatch}) => {
                 setSelectedTool("shape");
                 const id = Date.now();
                 dispatch({type: "shape", color: color.hex, shape, id, creator: true})
-                syncedMap.set('newShape', {color: color.hex, shape, id })
+                state.syncedMap.set('newShape', {color: color.hex, shape, id })
             }
         },
         {
@@ -120,7 +117,7 @@ const Toolbar = ({state, dispatch}) => {
                 setSelectedTool('text') 
 
                 dispatch({type: "text", color: color.hex, id, creator: true}) 
-                syncedMap.set('newText', {color: color.hex, id })
+                state.syncedMap.set('newText', {color: color.hex, id })
             }
         },
         {
@@ -147,7 +144,6 @@ const Toolbar = ({state, dispatch}) => {
             onClick: () => dispatch({type: 'download'})
         },  
     ]
-
 
     return (
         <div className="toolbar shadow px-2 py-4 rounded">
@@ -197,7 +193,7 @@ const ToolButton = ({name, icon, onClick, selected, onPhotoUpload}) => {
     )
 }
 
-const DropDownButton = ({name, items, icon, onClick, selected, width, dispatch}) => {
+export const DropDownButton = ({name, items, icon, onClick, selected, width, dispatch}) => {
     const style= {
         backgroundColor:'transparent', 
         border: "none", 

@@ -1,17 +1,24 @@
 import { fabric } from "fabric";
 import { newSquare, newTriangle, newCircle, newText } from "../shared/draw";
 
-import {syncedMap} from "../utils/symphony.config";
+// import {syncedMap} from "../utils/symphony.config";
 
 // import { DEFAULT_CANVAS_BACKGROUND, DEFAULT_ERASE_WIDTH } from "../utils/constants";
 import { DEFAULT_IMAGE_WIDTH, DEFAULT_IMAGE_SCALE } from "../utils/constants";
 
 const Reducer = (state, action) => {
   const { type } = action;
+  const syncedMap = state.syncedMap;
 
   if (type === 'init') {
-    return {...state, canvas: action.canvas}
+    const {newSyncedMap, room, canvas} = action;
+    console.log({newSyncedMap, action})
+    if (!newSyncedMap || !canvas || !room) return {...state}
+
+    return {...state, syncedMap: newSyncedMap, canvas, room,}
   }
+
+  if (!syncedMap) return {...state};
 
   if (type === 'cursor') {
     if (!state.canvas) return {...state}
@@ -154,6 +161,9 @@ const Reducer = (state, action) => {
     image.id = id;
 
     state.canvas.add(action.image)
+    const imageUrl = image.toDataURL();
+    syncedMap.set("image/upload", {imageUrl, id})
+    
     return {...state}
   }
 

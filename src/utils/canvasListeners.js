@@ -1,7 +1,6 @@
-import { syncedMap } from "./symphony.config";
 import { drawLine, combinePaths } from "../shared/paths";
 
-export default (canvas) => {
+export default (syncedMap, canvas) => {
   if (!canvas) return;
 
   canvas.on('object:moving', function(options) {

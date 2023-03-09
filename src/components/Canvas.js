@@ -2,12 +2,13 @@ import React, { useRef, useEffect, useState} from 'react'
 import { fabric } from 'fabric';
 import Toolbar from './Toolbar';
 import { useReducer } from 'react';
+import { useParams } from 'react-router-dom';
 
 import canvasReducer from "../reducer/reducer"
 import Header from "./Header"
 import Cursor from './PresenceCursor';
 
-import setupYjsObservers, { room } from '../utils/symphony.config';
+import setupSyncedMapListeners from "../utils/syncedMapListeners";
 import setupCanvasListeners from '../utils/canvasListeners';
 
 import { 
@@ -18,20 +19,28 @@ import {
 
 import { randName } from '../utils/canvasHelpers';
 
-const Canvas = () => {
+const Canvas = ({client}) => {
   const [state, dispatch] = useReducer(canvasReducer, INITIAL_STATE)
-
   const [cursorColor, setCursorColor] = useState(DEFAULT_CURSOR_COLOR)
   const [name, setName] = useState(randName())
   const [others, setOthers] = useState([])
 
+  const roomId = useParams().id  
   const canvasRef = useRef(null);
 
+  // useEffect(() => {
+  //   const room = client.enter(roomId);
+
+  // })
+  console.log({roomId})
   useEffect(() => {
+    const room = client.enter(roomId);
+    const newSyncedMap = room.newMap();
+
     const canvas = new fabric.Canvas('canvas', {skipOffscreen: true});
     function resizeCanvas() {
       canvas.setHeight(window.innerHeight);
-      canvas.setWidth(window.innerWidth * 0.9);
+      canvas.setWidth(window.innerWidth);
       canvas.renderAll();
     }
 
@@ -40,43 +49,49 @@ const Canvas = () => {
 
     const {innerWidth: width, innerHeight: height} = window;
 
-    canvas.setWidth(width * 0.9);
+    canvas.setWidth(width);
     canvas.setHeight(height);
     canvas.setBackgroundColor('#f3f3f3')
     canvas.groupsInAction = {};
 
-    setupCanvasListeners(canvas)
-    setupYjsObservers(canvas, dispatch)
+    // setupCanvasListeners(canvas)
+    // setupYjsObservers(canvas, dispatch)
+    setupSyncedMapListeners(newSyncedMap, canvas, dispatch)
+    setupCanvasListeners(newSyncedMap, canvas)
 
-    dispatch({type: "init", canvas,})
+    dispatch({type: "init", newSyncedMap, canvas, room,})
     return () => {
       canvas.dispose();
+      client.leave();
     };
-  }, []);
+  }, [roomId]);
 
   useEffect(() => {
-    console.log("presence")
-    room.subscribe('others', () => {
-      const users = room.getOthers().values();
-      console.log({users})
-      const others = [...users].filter(user => {
-        if (!user.user) return;
-        return user.user.name !== name 
+    console.log("before getting others")
+
+    if (!state.room) return;
+
+    console.log("getting others")
+    state.room.subscribe('others', () => {
+      const users = state.room.getOthers();
+      
+      const others = [...users].filter(item => {
+        return item[1].user?.name !== name 
       });
-  
+
       if (!others.length) return;
   
-      const offsetCursors = others.map(({user}) => {
-        const {name, color} = user;
-  
-        const x = user.offsetX * window.innerWidth;
-        const y = user.offsetY * window.innerHeight;
+      const offsetCursors = others.map((user) => {
+        const {name, color} = user[1].user;
+
+        const x = user[1].user.offsetX * window.innerWidth;
+        const y = user[1].user.offsetY * window.innerHeight;
         return {name, color, x, y}
-      })
+      });
   
      setOthers(offsetCursors) 
     })
-  }, [name])
+  }, [name, state.room])
 
   // useEffect(() => {
   //   window.addEventListener('keydown', handleUndoRedo);
@@ -88,8 +103,9 @@ const Canvas = () => {
     
     const offsetX = x / window.innerWidth;
     const offsetY = y / window.innerHeight;
-
-    room.updatePresence({
+    
+    if (!state.room) return;
+    state.room.updatePresence({
       user: {
         name,
         color: cursorColor,
@@ -107,7 +123,10 @@ const Canvas = () => {
 
     setName(name);
     setCursorColor(color)
-    room.updatePresence({
+
+    if (!state.room) return;
+
+    state.room.updatePresence({
       user: {
         name,
         color,
@@ -130,15 +149,22 @@ const Canvas = () => {
   //   }
   // }
 
+  // if (!state.room) {
+  //   return <div>Loading...</div>
+  // }
+
   return(
     <div
       onMouseMove={handleCursorTracking}
+      key={roomId}
     >
       <Header 
+        roomId={roomId}
         userCount={others.length} 
         onUserSettingsChange={handleUserSettingsChange}
         currentName={name}
         currentColor={cursorColor}
+        others={others}
       />
 
       <Toolbar state={state} dispatch={dispatch}/>
@@ -161,9 +187,7 @@ const Canvas = () => {
         <canvas
           id="canvas"
         />
-      </div>
-
-      
+      </div>      
     </div>
   )
 }
