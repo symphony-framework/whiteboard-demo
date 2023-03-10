@@ -10,21 +10,38 @@ const EnterRoom = () => {
     nav(`/${room}`);
   }
 
-  return (
-    <div 
-    style={{margin: 'auto', textAlign: 'center', marginTop: "250px"}}
-    >
-      <h1>Whiteboard</h1>
-      <form >
-        <label>
-          <input id="room-id" name="room-id" type="text" onChange={e => setRoom(e.target.value)} value={room} />
-        </label>
+  const handleSplitMode = (e) => {
+    e.preventDefault();
+    nav('/split-canvas')
+  }
 
-        <button 
-          onClick={handleEnterRoom}
-        >Enter Room</button>
-      </form>
-    </div>
+  return (
+    <>
+      <div 
+      style={{margin: 'auto', textAlign: 'center', marginTop: "250px"}}
+      >
+        <h1>Whiteboard</h1>
+        <form >
+          <label>
+            <input id="room-id" name="room-id" type="text" onChange={e => setRoom(e.target.value)} value={room} />
+          </label>
+      
+          <button 
+            onClick={handleEnterRoom}
+          >Enter Room</button>
+        </form>
+      </div>
+
+      <div 
+        className="main-bottom"
+      >
+          <button    
+          onClick={handleSplitMode}
+          >          
+            Split Mode
+          </button>
+      </div>
+    </>
   )
 }
 

@@ -3,57 +3,72 @@ import { Modal, Button, Form, Dropdown} from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
 
 // import upArrow from "../assets/imgs/icons/up-arrow.png"
+import UserNotification from "./Notification";
 import { ColorPicker, useColor } from "react-color-palette";
 import HamburgerIcon from "../assets/imgs/icons/HamburgerIcon.png"
 
-const Header = ({userCount, onUserSettingsChange, currentName, currentColor, roomId, others}) => {
+const Header = ({
+  userCount, onUserSettingsChange, 
+  currentName, currentColor, 
+  roomId, others,
+}) => {
   const [viewMode, setViewMode] = useState('');
-  // const [display, setDisplay] = useState(true)
-  // const [msg, setMsg] = useState("")
-  // const [selecting, setSelecting] = useState(false)
-  // const [changingName, setChangingName] = useState(false)
+
   const [name, setName] = useState(currentName || "")
   const [roomName, setRoomName] = useState(roomId);
   const [color, setColor] = useColor("hex", currentColor);
 
+  const [msg, setMsg] = useState('');
+
   const nav = useNavigate();
 
   const handleDisplayToggle = () => {
-    // setDisplay(!display)
     setViewMode('')
   }  
 
-  // const showChangeNameInput = (e) => {
-  //   e.preventDefault();
-  //   setChangingName(true)
-  // }
-
-
-  // const handleUserApperanceFormClose = () => {
-  //   setViewMode("");
-  // }
-
   const handleFormSubmit = () => {
-    console.log('about to submit')
     if (!name || !color) return;
 
+
+    const nameInUse = others.find(user => user.name === name);
+
+    if (nameInUse) {
+      setMsg(`display name "${name}" already in use`);
+      return;
+    }
+
     onUserSettingsChange({color: color.hex, name});
+    setMsg("")
     setViewMode("")
   }
 
   const handleSelectViewMode = (viewMode) => {
-    console.log("setting view", {viewMode})
     setViewMode(viewMode)
   }
 
   const handleJoinNewRoom = () => {
+    console.log("joining a new room", {roomName})
+    if (!roomName) {
+      setMsg("Enter a room name")
+      return;
+    }
+
+    if (roomName === 'split-canvas') {
+      setMsg("Reserved room name")
+      return;
+    }
+
+    setMsg("")
     nav(`/${roomName}`)
   }
 
   const handleLeaveRoom = (e) => {
-    console.log("leaving", {e})
     e.preventDefault();
     nav('/');
+  }
+
+  const handleHideMsg = () => {
+    setMsg("")
   }
 
   const items = [
@@ -105,7 +120,6 @@ const Header = ({userCount, onUserSettingsChange, currentName, currentColor, roo
 
       {others.map(user => 
         {
-          console.log({user})
           return (        
           <div className="other-user-card"
           key={user.connectionId}
@@ -126,11 +140,11 @@ const Header = ({userCount, onUserSettingsChange, currentName, currentColor, roo
 
   return (
     <header className="show">
-      {/* {msg ? <Notification /> : ""} */}
-
       {viewMode === 'user-cards' ? UserCardsView : ""}
       
       <Modal show={viewMode === 'user-settings'} fullscreen={"md-down"} onHide={handleDisplayToggle}>
+        < UserNotification msg={msg} onMessage={handleHideMsg}/>
+        
         <Modal.Header closeButton>
             <Modal.Title>Change appearance</Modal.Title>
         </Modal.Header>
@@ -171,6 +185,8 @@ const Header = ({userCount, onUserSettingsChange, currentName, currentColor, roo
       </Modal>
 
       <Modal show={viewMode === 'change-room'} fullscreen={"md-down"} onHide={handleDisplayToggle}>
+        < UserNotification msg={msg} />
+        
         <Modal.Header closeButton>
             <Modal.Title>New Room</Modal.Title>
         </Modal.Header>
@@ -242,5 +258,18 @@ const DropDownButton = ({items}) => {
   </Dropdown>
   )
 }
+
+// const ErrorNotification = ({title, msg, onMsgClose}) => {
+//   if (!msg) return null;
+
+//     return (
+//       <Notif variant="danger" onClose={onMsgClose} dismissible>
+//         <Alert.Heading>{title}</Alert.Heading>
+//         <p>
+//           {msg}
+//         </p>
+//       </Alert>
+//   );
+// }
 
 export default Header

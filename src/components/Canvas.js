@@ -19,28 +19,27 @@ import {
 
 import { randName } from '../utils/canvasHelpers';
 
-const Canvas = ({client}) => {
+const Canvas = ({client, roomName, split, side}) => {
   const [state, dispatch] = useReducer(canvasReducer, INITIAL_STATE)
   const [cursorColor, setCursorColor] = useState(DEFAULT_CURSOR_COLOR)
   const [name, setName] = useState(randName())
   const [others, setOthers] = useState([])
 
-  const roomId = useParams().id  
+  const roomId = roomName || useParams().id  
   const canvasRef = useRef(null);
 
   // useEffect(() => {
   //   const room = client.enter(roomId);
 
   // })
-  console.log({roomId})
   useEffect(() => {
     const room = client.enter(roomId);
     const newSyncedMap = room.newMap();
 
-    const canvas = new fabric.Canvas('canvas', {skipOffscreen: true});
+    const canvas = new fabric.Canvas(`canvas-${roomId}`, {skipOffscreen: true});
     function resizeCanvas() {
       canvas.setHeight(window.innerHeight);
-      canvas.setWidth(window.innerWidth);
+      canvas.setWidth(split ? window.innerWidth / 2 : window.innerWidth);
       canvas.renderAll();
     }
 
@@ -49,7 +48,7 @@ const Canvas = ({client}) => {
 
     const {innerWidth: width, innerHeight: height} = window;
 
-    canvas.setWidth(width);
+    canvas.setWidth(split ? width / 2 : width);
     canvas.setHeight(height);
     canvas.setBackgroundColor('#f3f3f3')
     canvas.groupsInAction = {};
@@ -67,28 +66,64 @@ const Canvas = ({client}) => {
   }, [roomId]);
 
   useEffect(() => {
-    console.log("before getting others")
 
     if (!state.room) return;
 
-    console.log("getting others")
     state.room.subscribe('others', () => {
       const users = state.room.getOthers();
       
-      const others = [...users].filter(item => {
+      const otherUsers = [...users].filter(item => {
         return item[1].user?.name !== name 
       });
 
-      if (!others.length) return;
-  
-      const offsetCursors = others.map((user) => {
+      // let userLeft, userJoined
+      // if (otherUsers.length < others.length) {
+      //   others.forEach(user => {
+
+      //     const inRoom = otherUsers.find(otherUser => 
+      //       otherUser[1].name === user.name
+      //     )
+
+      //     if (inRoom) return;
+      //     userLeft = user;
+      //   })
+        
+      //   // console.log({newOthers, userLeft})
+      // }
+
+      if (!otherUsers.length || !state.canvas) return;
+      
+      const offsetCursors = otherUsers.flatMap((user) => {
         const {name, color} = user[1].user;
 
-        const x = user[1].user.offsetX * window.innerWidth;
-        const y = user[1].user.offsetY * window.innerHeight;
-        return {name, color, x, y}
+        // const width = state.canvas.width;
+        // WINDOW.INNER
+
+        if (!user[1] || !user[1].user) return [];
+
+        let x = user[1].user.offsetX * state.canvas.width
+        const y = user[1].user.offsetY * state.canvas.height;
+
+        // if (split) {
+        //   x += state.cavnas.width
+        // }
+        return [{name, color, x, y}]
       });
   
+      // if (otherUsers.length > others.length) {
+      //   otherUsers.forEach(user => {
+      //     const { name } = user[1].user
+
+      //     if (!name) return;
+      //     const inRoom = others.find(user => user.name === name);
+
+      //     if (!inRoom) {
+      //       userJoined = user[1].user;
+      //     }
+      //   })
+        
+      // }
+
      setOthers(offsetCursors) 
     })
   }, [name, state.room])
@@ -101,9 +136,15 @@ const Canvas = ({client}) => {
   const handleCursorTracking = (e) => {
     const { clientX: x, clientY: y} = e
     
-    const offsetX = x / window.innerWidth;
-    const offsetY = y / window.innerHeight;
+    if (!state.canvas) return;
+
+    let offsetX = x / state.canvas.width;
+    const offsetY = y / state.canvas.height;
     
+    if (split && side === 2) {
+      offsetX -= 1;
+    }
+
     if (!state.room) return;
     state.room.updatePresence({
       user: {
@@ -155,6 +196,7 @@ const Canvas = ({client}) => {
 
   return(
     <div
+      className="canvas-container"
       onMouseMove={handleCursorTracking}
       key={roomId}
     >
@@ -185,7 +227,7 @@ const Canvas = ({client}) => {
         ref={canvasRef}
       >
         <canvas
-          id="canvas"
+          id={`canvas-${roomId}`}
         />
       </div>      
     </div>

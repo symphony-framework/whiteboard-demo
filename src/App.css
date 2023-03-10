@@ -7,40 +7,37 @@ html {
   overflow: hidden;
 }
 
+div.main-bottom {
+  background-color: white; 
+  text-align: center; 
+  padding: 50px
+}
+
+div.main-bottom button {
+  background-color: #3492df;
+  color: white
+}
+
+div.split-mode-select {
+  margin: auto;
+  text-align: center;
+  margin-top: 250px;
+}
+
+
 header.show {
   position: absolute;
   z-index: 1;
   background-color: rgb(206, 199, 245);
 
   top: 10px;
-  /* left:0; */
   right: 10px;
-  /* margin-left:auto; */
   margin-right:auto;
 
 
   max-width: 40%;
   border-radius: 5px;
   text-align: center;
-  
-  /* text-align: center;
-  background: white;
-  padding: 15px;
-
-  display: inline-block;
-  border-radius: 5px;
-  border: 3px solid rgb(163, 156, 156);
-
-  width: max-content;
-  
-  position: absolute;
-  z-index: 1;
-
-  margin-top: -15px;
-  left:0;
-  right:0;
-  margin-left:auto;
-  margin-right:auto; */
 }
 
 header.show h1 {
@@ -115,7 +112,7 @@ div.other-user-card {
 .toolbar {
   max-width: 80px;
   display: inline-block;
-  position: fixed;
+  position: absolute;
   top: 10px;
   left: 10px;
   z-index: 1;
@@ -186,4 +183,8 @@ div.other-user-card {
 .slider-value-example {
   /* display: absolute;
   z-index: 5; */
+}
+
+div.canvas-container {
+  position: absolute;
 }

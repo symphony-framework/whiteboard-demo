@@ -1,5 +1,6 @@
 const Cursor = ({ x, y, color, name }) => {
   if (!x || !y) return;
+  
   const cursorStyle = {
     position: "absolute",  
     transform: `translate(${x}px, ${y}px)`, 
