@@ -6,7 +6,7 @@
 // import { findCanvasObject } from './canvasHelpers'
 // import { drawLine, combinePaths } from "../shared/paths"
 
-import { SymphonyClient } from "../symphony/index.js";
+import { SymphonyClient } from "@symphony-rtc/client";
 
 const WS_URL = "ws://localhost:1234"
 const client = new SymphonyClient(WS_URL);
