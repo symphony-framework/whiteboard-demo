@@ -1,5 +1,6 @@
 import { fabric } from "fabric";
 import { newSquare, newTriangle, newCircle, newText } from "../shared/draw";
+import { drawLine, combinePaths } from "../shared/paths"
 
 // import {syncedMap} from "../utils/symphony.config";
 
@@ -12,7 +13,7 @@ const Reducer = (state, action) => {
 
   if (type === 'init') {
     const {newSyncedMap, room, canvas} = action;
-    console.log({newSyncedMap, action})
+    
     if (!newSyncedMap || !canvas || !room) return {...state}
 
     return {...state, syncedMap: newSyncedMap, canvas, room,}
@@ -86,11 +87,87 @@ const Reducer = (state, action) => {
       case "circle":
         newShape = newCircle(action.color, action.id, state.canvas);
         break;
+      default:
+        return;
     }
 
     state.canvas.add(newShape);
-    if (action.creator) state.canvas.setActiveObject(newShape);
+    if (action.creator) {
+      const {id, color, shape, type} = action;
+      state.canvas.setActiveObject(newShape);
+      
+      syncedMap.set(id, {type, action: "newShape", color, shape: shape})
+    }
     return { ...state}
+  }
+
+  if (type === 'newLine') {
+    if (!state.canvas) return {...state};
+
+    const {id, startPoint, endPoint, color, width} = action;
+
+    const getPathEnds = () => {
+      const paths = state.canvas.getObjects().filter(obj => {
+        if (obj.id !== +id) return false;
+
+        state.canvas.remove(obj)
+        return true;
+      })
+
+      if (!paths || !paths.length) return;
+      return {start: paths[0].path, end: paths[paths.length - 1].path};
+    }
+
+    const endPoints = getPathEnds();
+    if (!endPoints) {
+      const newLinePoints = drawLine(startPoint, endPoint)
+      const newLinePath = combinePaths(newLinePoints, color, width);
+  
+      newLinePath.id = +id;
+      state.canvas.add(newLinePath)
+      return {...state}
+    }
+
+    if (endPoints) {
+      const {start, end} = endPoints;
+      if (!start || !end) return {...state};
+      
+      const linePath = drawLine(start, end)
+      const onePath = combinePaths(linePath, color, width)
+      onePath.id = id;
+  
+      state.canvas.add(onePath)
+      return {...state};
+    }
+  }
+
+  if (type === 'finishDrawing') {
+    const { id, width, color, pathStr, offsetX, offsetY } = action;
+
+    const getPaths = () => {
+      state.canvas.getObjects().forEach(obj => {
+        if (+obj.id !== +id) return;
+        state.canvas.remove(obj)
+      })
+    }
+
+    getPaths()
+
+    const pencil = new fabric.PencilBrush(state.canvas);
+    const path = pencil.createPath(pathStr);
+
+    const left = state.canvas.width * offsetX;
+    const top = state.canvas.height * offsetY;
+
+    path.set("strokeWidth", width)
+    path.set("stroke", color)
+    path.id = id;
+
+    path.set("left", left);
+    path.set("top", top);
+
+    state.canvas.add(path)
+    return {...state}
   }
   
   // if (type === 'eraser') {
@@ -115,7 +192,11 @@ const Reducer = (state, action) => {
     const text = newText(action.color, action.id, state.canvas)
 
     state.canvas.add(text)
-    if (action.creator) state.canvas.setActiveObject(text)
+    if (action.creator) {
+      const {id, color} = action
+      state.canvas.setActiveObject(text)
+      syncedMap.set(id, {type, action: "newText", color})
+    }
 
     return {...state}
   }
@@ -131,14 +212,22 @@ const Reducer = (state, action) => {
         const { id } = element;
         state.canvas.remove(element)
 
-        if (id) syncedMap.set('removeObject', {id})
+
+        if (id) {
+          syncedMap.set(id, {action: 'clear'})
+          syncedMap.delete(id)
+        }
+        // if (id) syncedMap.set(id, {action: 'clear'})
       })
 
     } else {
       state.canvas.remove(selected)
       const { id } = selected;
 
-      if (id) syncedMap.set("removeObject", {id})
+      if (id) {
+        syncedMap.set(id, {action: 'clear'})
+        syncedMap.delete(id)
+      }
     }
 
     state.canvas.discardActiveObject();
@@ -151,18 +240,22 @@ const Reducer = (state, action) => {
     const { image, id, creator } = action
     if (!state.canvas || !image) return {...state};
 
-    if (creator) state.canvas.isDrawingMode = false;
 
-    const width = state.canvas.width * DEFAULT_IMAGE_SCALE;
+    // const width = state.canvas.width;
 
-    image.scaleToWidth(width || DEFAULT_IMAGE_WIDTH);
+    image.scaleToWidth( DEFAULT_IMAGE_WIDTH);
     image.set('left', state.canvas.width * DEFAULT_IMAGE_SCALE)
     image.set('top', state.canvas.height * DEFAULT_IMAGE_SCALE)
+    
     image.id = id;
 
     state.canvas.add(action.image)
-    const imageUrl = image.toDataURL();
-    syncedMap.set("image/upload", {imageUrl, id})
+
+    if (creator) {
+      const imageUrl = image.toDataURL();
+      syncedMap.set(id, {type, imageUrl, action: "image/upload"})
+      state.canvas.isDrawingMode = false;
+    }
     
     return {...state}
   }

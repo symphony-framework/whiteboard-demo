@@ -23,9 +23,6 @@ import DownloadIcon from '../assets/imgs/icons/Download.svg'
 
 
 import { Dropdown, Modal } from 'react-bootstrap';
-//import { syncedMap } from "./Canvas"
-// import {syncedMap} from "../utils/symphony.config";
-
 import { shapeOptions, brushOptions } from '../utils/constants';
 
 const Toolbar = ({state, dispatch}) => {
@@ -74,7 +71,7 @@ const Toolbar = ({state, dispatch}) => {
                 setSelectedTool("shape");
                 const id = Date.now();
                 dispatch({type: "shape", color: color.hex, shape, id, creator: true})
-                state.syncedMap.set('newShape', {color: color.hex, shape, id })
+                //state.syncedMap.set('newShape', {color: color.hex, shape, id })
             }
         },
         {
@@ -86,7 +83,7 @@ const Toolbar = ({state, dispatch}) => {
             onClick: (brush) => { 
                 const id = Date.now();
                 dispatch({type: "brush", brush, color: color.hex, id, creator: true})
-                setSelectedTool('BRUSH') 
+                setSelectedTool('brush') 
             }
         },
         {
@@ -113,7 +110,7 @@ const Toolbar = ({state, dispatch}) => {
             type: "button",
             
             onClick: () => { 
-                const id = Date.now().toString();
+                const id = Date.now();
                 setSelectedTool('text') 
 
                 dispatch({type: "text", color: color.hex, id, creator: true}) 

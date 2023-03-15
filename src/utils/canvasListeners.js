@@ -1,10 +1,10 @@
 import { drawLine, combinePaths } from "../shared/paths";
 
-export default (syncedMap, canvas) => {
+const canvasListeners = (syncedMap, canvas) => {
   if (!canvas) return;
 
   canvas.on('object:moving', function(options) {
-    const { id, left, top } = options.target
+    const { id, left, top} = options.target
     const multiSelect = options.target._objects;
     const offsetX = left / canvas.width
     const offsetY = top / canvas.height
@@ -12,69 +12,45 @@ export default (syncedMap, canvas) => {
     if (!left || !top) {
       return;
     }
-
-    // handle single object movement
+    
     if (id && !multiSelect) {
-      syncedMap.set("newPosition", {id, offsetX, offsetY})
+      const otherVals = syncedMap.get(id)
+      syncedMap.set(id, {
+        ...otherVals, 
+        action: "newPosition",
+        offsetX, offsetY
+      });
+      
       return;
     }
 
-    // handle movement of a new group
-    if (!id && canvas.multiSelectId) {
-      const groupId = canvas.multiSelectId;
-      const group = multiSelect.map(selection => selection.id);
+    if (multiSelect) {  
+      const {top: groupTop, left: groupLeft, width: groupWidth, height: groupHeight} = options.target;
 
-      if (!groupId) {
-        return;
-      }
+      multiSelect.forEach(obj => {
+        const {id, left, top} = obj;
 
-      options.target.id = groupId
-      syncedMap.set('newGroupMovement', {group, groupId, offsetX, offsetY})
+        if (!id || !left || !top);
+
+        const otherVals = syncedMap.get(id);
+
+        let objectInGroupLeft = left + groupLeft + groupWidth / 2
+        let objectInGroupTop = top + groupTop + groupHeight / 2
+
+        const offsetX = objectInGroupLeft / canvas.width;
+        const offsetY = objectInGroupTop / canvas.height;
+
+        syncedMap.set(id, {
+          ...otherVals, 
+          action: "newPosition", 
+          offsetX,
+          offsetY,
+        });
+      })
     }
 
-    // handle additional movement of existing group
-    if (id && multiSelect) {
-      const group = multiSelect.map(obj => obj.id);
-      syncedMap.set('newGroupMovement', {group, groupId: canvas.multiSelectId, offsetX, offsetY})
-    }
     return;
   })
-  
-  // canvas.on('object:drop', function(options) {
-  //   console.log("DROPPP OBJECT EVENT")
-  //   const {id, left, top} = options.target;
-  //   const multiSelect = options.target._objects;
-
-  //   console.log("drop", {multiSelect})
-  //   const offsetX = left /canvas.width;
-  //   const offsetY = top / canvas.width;
-
-  //   if (!id) {
-  //     console.log("no id", options.target);
-  //     return;
-  //   }
-
-  //   if (multiSelect) {
-  //     const {target} = options;
-
-  //     if (!target._objects || !target._objects.length) {
-  //       canvas.isMultiSelectMode = false;
-  //       return;
-  //     }
-
-  //     const groupId = Date.now();
-  //     canvas.multiSelectId = groupId;
-
-  //     const {_objects: objects} = target;
-  //     const group = objects.map(obj => obj.id);
-
-  //     const {top, left} = options.target;
-  //     const originalOffsetX = left / canvas.width;
-  //     const originalOffsetY = top / canvas.height;
-
-  //     syncedMap.set('newGroupSelection', {groupId, group, originalOffsetX, originalOffsetY})
-  //   }
-  // })
   
   canvas.on('selection:created', function(options) {
     const {selected} = options;
@@ -84,20 +60,10 @@ export default (syncedMap, canvas) => {
   
     canvas.multiSelectId = groupId;
     return;
-    // const group = selected.map(selection => selection.id);
-    // syncedMap.set('newGroupSelection', {group, groupId})
   })
 
   canvas.on('selection:cleared', function(options) {
-    console.log("clearing select", {options});
-
     canvas.multiSelectId = null;
-
-    const {multiSelectId: groupId} = canvas;
-
-    if (!groupId) return; 
-
-    syncedMap.set('clearGroupSelection', {groupId});
     return;
   })
 
@@ -125,26 +91,6 @@ export default (syncedMap, canvas) => {
       return;
     }
 
-    // if (canvas.isErasingMode) {
-    //     const {freeDrawingBrush} = canvas;
-    //     const {_points , width, color, } = freeDrawingBrush;
-
-    //     const eraseId = Date.now();
-
-    //     canvas.isCurrentlyErasing = true;
-    //     canvas.freeDrawingBrush.id = eraseId
-        
-    //     const points = _points.map(point => {
-    //       return {
-    //         offsetX: point.x / canvas.width, 
-    //         offsetY: point.y / canvas.height,
-    //       }
-    //     })
-
-    //     syncedMap.set("newErase", {id: eraseId, points})
-    //     return;
-    // }
-
     if (canvas.isDrawingMode) {
       const {freeDrawingBrush} = canvas;
       if (freeDrawingBrush.type === 'eraser') return;
@@ -162,31 +108,11 @@ export default (syncedMap, canvas) => {
         }
       })
       
-      syncedMap.set("newDrawing", {id: drawId, points, width, color})
+      syncedMap.set("newDrawing", {action: "newDrawing", id: drawId, points, width, color})
     }
   })
 
   canvas.on('mouse:move', function() {
-    // if (canvas.isCurrentlyErasing) {
-    //   const {freeDrawingBrush} = canvas;
-
-    //   const {_points, width, color, id} = freeDrawingBrush;
-
-    //   const lastCoord = _points[_points.length - 2];
-    //   const nextCoord = _points[_points.length - 1];
-      
-    //   // map over all points for LOAD TESTING
-    //   const points = [lastCoord, nextCoord].map(point => {
-    //     return {
-    //       offsetX: point.x / canvas.width, 
-    //       offsetY: point.y / canvas.height,
-    //     }
-    //   })
-
-    //   syncedMap.set("erasing", {id, points, width})
-    //   return
-    // }
-
     if (canvas.isCurrentlyDrawing) {
       const {freeDrawingBrush} = canvas;
 
@@ -202,151 +128,20 @@ export default (syncedMap, canvas) => {
         }
       })
 
-      syncedMap.set("drawing", {id, points, width, color})
-      // stream update, mouse position, relative, and points? 
+      syncedMap.set('drawing', {action: "drawing", id, points, width, color})
     }
   })
 
   canvas.on('mouse:up', function(options) {
-    console.log("mouse up", {canvas, options, multiSelect: canvas.multiSelectId})
-
     if (canvas.multiSelectId) {
       const { target, transform } = options;
 
       if (!transform || !target) return;
       
         const { _objects: objects } = target;
-        const { action } = transform;
-        console.log("target")
-        
+        const { action } = transform;        
 
-        if (objects && action === 'scale') {
-
-
-          // canvas.fire('selection:cleared');
-
-          console.log("scale", {options})  
-         
-          // console.log("resetting remote caches with outdate offset data")
-          // const {
-          //   top: groupTop, left: groupLeft, 
-          //   width: groupWidth, height: groupHeight, 
-          //   scaleX, scaleY, flipX, flipY
-          // } = target;
-
-          // if (!flipX && !flipY) return;
-
-          // const {
-          //   top: originalGroupTop, left: originalGroupLeft, 
-          // } = options.transform.original
-
-          // const groupId = canvas.multiSelectId;
-          
-          // const clones = [];
-
-          // objects.forEach(obj => {
-          //   const {id, left, top, width: objWidth, height: objHeight } = obj;
-          //   if (!id) return;
-          //   console.log('about to remove')
-
-          //   const cloneObj = fabric.util.object.clone(obj);
-
-          //   const targetObject = findCanvasObject(canvas, id);
-          //   if (!targetObject) return;
-
-          //   let objectInGroupLeft = left + groupLeft + groupWidth / 2
-          //   let objectInGroupTop = top + groupTop + groupHeight / 2
-
-            // //
-            // let objOffsetX = objectInGroupLeft - groupLeft;
-            // let objOffsetY = objectInGroupTop - groupTop;
-
-            // console.log({objOffsetX, objOffsetY})
-        
-            // const rightOffset = (groupLeft - ((objWidth * scaleX) + objOffsetX));
-            // const bottomOffset = (groupTop - ((objHeight * scaleY) + objOffsetY));
-            
-
-            // console.log({cloneObj, objectInGroupLeft, objectInGroupTop, flipX, flipY})
-            // cloneObj.set('left', obj.left)
-            // cloneObj.set('flipX', flipX)
-            
-            // cloneObj.set('top', obj.top)
-            // cloneObj.set('flipY', flipY)
-            // cloneObj.setCoords();
-
-            // clones.push(cloneObj);
-            // canvas.remove(obj)
-            // console.log("anotha one")
-            // if (flipX) {
-              //   cloneObj.set('top', objectInGroupTop)
-            //   cloneObj.set('flipY', flipY)
-            // }
-
-            // if (flipY) {
-            //   cloneObj.set('top', objectInGroupTop)
-            //   cloneObj.set('flipY', flipY)
-
-            // }
-
-            // console.log({objectInGroupLeft, objectInGroupTop})
-            // let objOffsetX = objectInGroupLeft - groupLeft;
-            // let objOffsetY = objectInGroupTop - groupTop;
-
-            // console.log({objOffsetX, objOffsetY})
-        
-            // const rightOffset = (groupLeft - ((objWidth * scaleX) + objOffsetX));
-            // const bottomOffset = (groupTop - ((objHeight * scaleY) + objOffsetY));
-
-            // if (flipX) {
-            //   const newLeft = groupLeft + rightOffset;
-            //   targetObject.set('left', newLeft);
-            //   targetObject.set('flipX', flipX);
-            // }
-
-            // if (flipY) {
-            //   const newTop = groupTop + bottomOffset;
-            //   targetObject.set('top', newTop);
-            //   targetObject.set('flipY', flipY);
-            // }
-
-          //   target.setCoords();
-          // })
-
-          // console.log({clones})
-          // clones.forEach(cloneObj => {
-          //   canvas.add(cloneObj);
-          // });
-
-
-//             const originalOffsetX = groupLeft / canvas.width;
-//             const originalOffsetY = groupTop / canvas.height;
-
-//             const group = objects.map(obj => {
-//               const {id, top, left} = obj;
-//               if (!id || !left || !top) return;
-
-//               const targetObject = findCanvasObject(canvas, id);
-//               if (!targetObject) return;
-  
-//               let objectInGroupLeft = left + groupLeft + groupWidth / 2
-//               let objectInGroupTop = top + groupTop + groupHeight / 2
-
-//               const objOffsetX = objectInGroupLeft / canvas.width;
-//               const objOffsetY = objectInGroupTop / canvas.height;
-// //test  
-//               console.log("local obj info", {targetObject, objOffsetX, objOffsetY});
-
-//               return {
-//                 id,
-//                 objOffsetX,
-//                 objOffsetY,
-//               }
-//             });
-
-//             console.log({group})
-//             syncedMap.set('updateGroupPositionsCache', {groupId, group, originalOffsetX, originalOffsetY})
-
+        if (objects && action.includes('scale')) {    
           canvas.discardActiveObject();
           canvas.renderAll();
 
@@ -355,14 +150,6 @@ export default (syncedMap, canvas) => {
 
         return;
     }
-
-    // if (canvas.isCurrentlyErasing) {
-    //   canvas.isCurrentlyErasing = false;
-    //   const {id, width, color, type} = canvas.freeDrawingBrush;
-
-    //   if (type !== 'eraser') return;
-    //   return;
-    // }
 
     if (canvas.isCurrentlyDrawing) {
       canvas.isCurrentlyDrawing = false;
@@ -389,31 +176,77 @@ export default (syncedMap, canvas) => {
         const newLinePoints = drawLine(startPoint, endPoint)
         const newLinePath = combinePaths(newLinePoints, color, width)
         newLinePath.id = id;
-
+        
         canvas.remove(options.currentTarget)
         canvas.add(newLinePath)
-        syncedMap.set('finishLine', { id, color, width});
+        syncedMap.set(id, {
+          type: 'newLine', 
+          action: 'newLine', 
+          color, width, 
+          startPoint, endPoint
+        });
+
+        syncedMap.delete('newDrawing')
+        syncedMap.delete('drawing')
+
         return;
       }
 
-      if (type === 'draw') syncedMap.set("finishDrawing", {id, color, width})
+      if (type === 'draw') {
+        const {path, left, top} = options.currentTarget
+
+        const offsetX = left / canvas.width;
+        const offsetY = top / canvas.height;
+
+        syncedMap.set(id, {
+          type: 'finishDrawing',
+          action: "finishDrawing", 
+          color, width, 
+          pathStr: path.toString(),
+          offsetX, offsetY,
+        })
+
+        syncedMap.delete('newDrawing')
+        syncedMap.delete('drawing')
+
+      }
     }
   })
 
   canvas.on('object:rotating', function(options) {
     const { id, angle, left, top } = options.target
+    const multiSelect = options.target._objects;
 
-    if (!id || !angle) return;
 
-    const offsetX = left / canvas.width
-    const offsetY = top / canvas.height
+    if (!angle) return;
+
+    // disable multi select - functinality too time consuming to get right for little payofff
+    if (multiSelect) {
+      const {left: oldLeft, top: oldTop} = options.transform.original
+
+      // disable multi select - functinality too time consuming to get right for little payofff
+      options.target.angle = 0;
+      options.target.left = oldLeft;
+      options.target.top = oldTop;
+
+      canvas.renderAll();
+      return;
+    }
 
     // const { transform, target } = options
-    syncedMap.set("rotate", {id, angle, offsetX, offsetY})
+    if (!multiSelect) {
+      const offsetX = left / canvas.width
+      const offsetY = top / canvas.height
+  
+      const otherVals = syncedMap.get(id);
 
-    // const multiSelect = options.target._objects;
-    // const {left: oldLeft, top: oldTop} = options.transform.original
-    // const { action, corner, } = options.transform;
+      syncedMap.set(id, {
+        ...otherVals,
+        action: "newPosition", 
+        angle, offsetX, offsetY
+      })
+      return;
+    }
   })
 
   canvas.on('object:scaling', function(options) {
@@ -426,34 +259,60 @@ export default (syncedMap, canvas) => {
     } = options.target
 
     const multiSelect = options.target._objects;
-
     const {left: oldLeft, top: oldTop} = options.transform.original
     const { action, corner, } = options.transform;
+
+    // disable multi select - functinality too time consuming to get right for little payofff
+    if (multiSelect) {
+      options.target.scaleX = 1;
+      options.target.scaleY = 1;
+      options.target.left = oldLeft;
+      options.target.top = oldTop;
+      options.target.flipX = false;
+      options.target.flipY = false;
+
+      canvas.renderAll();
+      return;
+    }
 
     if (action === "scaleX") {
       const cornerPos = corner === "ml" || flipX ? left : oldLeft;
       const offsetX = cornerPos / canvas.width;
+      const offsetY =  (top/ canvas.height);
 
       if (!multiSelect) {
-        syncedMap.set(action, {id, scaleX, offsetX, flipX})
+        const otherVals = syncedMap.get(id);
+
+        syncedMap.set(id, {
+          ...otherVals,
+          action: "newPosition", 
+          scaleX, offsetX, offsetY,
+          flipX, 
+        })
         return;
       }
 
-      syncedMap.set("newGroupScaleX", {corner, groupId: canvas.multiSelectId, scaleX, offsetX, flipX, width: width / canvas.width})
       return;
     }
 
     if (action === "scaleY") {
       const cornerPos = corner === "mt" || flipY ? top : oldTop;
       const offsetY = cornerPos / canvas.height;
+      const offsetX = left / canvas.width;
 
       if (!multiSelect) {
-        syncedMap.set(action, {id, scaleY, offsetY, flipY});
-        return;
+        const otherVals = syncedMap.get(id);
+        syncedMap.set(id, {
+          ...otherVals,
+          action: "newPosition", 
+          scaleY, offsetX, offsetY,
+          flipY, 
+        })        
+      return;
       }
 
-      syncedMap.set("newGroupScaleY", {corner, groupId: canvas.multiSelectId, scaleY, offsetY, flipY, height: height / canvas.height})
-      return;
+      // syncedMap.set("newGroupScaleY", {corner, groupId: canvas.multiSelectId, scaleY, offsetY, flipY, height: height / canvas.height})
+      // return;
     } 
 
     if (action === "scale") {
@@ -464,16 +323,19 @@ export default (syncedMap, canvas) => {
       const offsetY = yCorner / canvas.height;
 
       if (!multiSelect) {
-        syncedMap.set(action, {id, scaleY, scaleX, offsetY, offsetX, flipX, flipY})
+        const otherVals = syncedMap.get(id);
+
+        syncedMap.set(id, {
+          ...otherVals,
+          action: 'newPosition', 
+          scaleY, scaleX, 
+          offsetY, offsetX, 
+          flipX, flipY
+        })
         return;
       }  
-
-      syncedMap.set("newGroupScale", {
-        corner, groupId: canvas.multiSelectId, 
-        scaleY, scaleX, offsetY, offsetX, flipX, flipY, 
-        width: width  / canvas.width, height: height / canvas.height
-      })
-      return;
     }
   })
 }
+
+export default canvasListeners

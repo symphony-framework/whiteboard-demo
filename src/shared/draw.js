@@ -70,8 +70,8 @@ export const newText = (color, id, canvas) => {
   const left = offsetLeft(canvas.width)
   const top = offsetTop(canvas.height)
 
-  const fontSize = canvas.height * 0.075
-  console.log({left, top, fontSize})
+  const fontSize = canvas.height * 0.075;
+  
   return new fabric.Text('New', {
       id, 
       left, 

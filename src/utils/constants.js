@@ -5,7 +5,8 @@ import SquareIcon from '../assets/imgs/icons/Square.png'
 import TriangleIcon from '../assets/imgs/icons/Triangle.png'
 import CircleIcon from '../assets/imgs/icons/Circle.png'
 
-export const WS_URL = "ws://localhost:1234"
+export const WS_URL = "ws://symtest-lb-620682843.us-east-1.elb.amazonaws.com/"
+
 export const DEFAULT_CANVAS_BACKGROUND = "#f3f3f3"
 
 export const DEFAULT_CURSOR_COLOR = '#ffb61e';

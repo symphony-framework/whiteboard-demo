@@ -10,7 +10,6 @@ export const drawLine = (start, end) => {
   const slope = (endY - startY) / (endX - startX);
   const straightPath = [];
   
-  console.log({startX, startY, endX, endY, slope})
   if (startX < endX) {
     let currentX = startX;
     let currentY = startY;

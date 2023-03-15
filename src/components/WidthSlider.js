@@ -14,7 +14,6 @@ const Slider = ({onWidthChange, currentVal}) => {
   const handleSliderRelease = () => {
     if (value === currentVal) return;
     const width = value / 100;
-    console.log("handle width slider", {width})
     onWidthChange(width)
   }
 

@@ -25,21 +25,23 @@ const Canvas = ({client, roomName, split, side}) => {
   const [name, setName] = useState(randName())
   const [others, setOthers] = useState([])
 
-  const roomId = roomName || useParams().id  
+  const id = useParams().id;
+  const roomId = roomName || id
   const canvasRef = useRef(null);
 
-  // useEffect(() => {
-  //   const room = client.enter(roomId);
+  const height = window.innerHeight;
+  const width = window.innerWidth;
 
-  // })
   useEffect(() => {
     const room = client.enter(roomId);
     const newSyncedMap = room.newMap();
 
     const canvas = new fabric.Canvas(`canvas-${roomId}`, {skipOffscreen: true});
-    function resizeCanvas() {
-      canvas.setHeight(window.innerHeight);
-      canvas.setWidth(split ? window.innerWidth / 2 : window.innerWidth);
+    function resizeCanvas(e) {
+      if (split) return;
+
+      canvas.setHeight(height);
+      canvas.setWidth(width);
       canvas.renderAll();
     }
 
@@ -52,18 +54,18 @@ const Canvas = ({client, roomName, split, side}) => {
     canvas.setHeight(height);
     canvas.setBackgroundColor('#f3f3f3')
     canvas.groupsInAction = {};
+    canvas.brushesInAction = {}
 
-    // setupCanvasListeners(canvas)
-    // setupYjsObservers(canvas, dispatch)
     setupSyncedMapListeners(newSyncedMap, canvas, dispatch)
     setupCanvasListeners(newSyncedMap, canvas)
-
+    
     dispatch({type: "init", newSyncedMap, canvas, room,})
+
     return () => {
       canvas.dispose();
       client.leave();
     };
-  }, [roomId]);
+  }, [roomId, client, split, height, width]);
 
   useEffect(() => {
 
@@ -94,12 +96,12 @@ const Canvas = ({client, roomName, split, side}) => {
       if (!otherUsers.length || !state.canvas) return;
       
       const offsetCursors = otherUsers.flatMap((user) => {
+        if (!user || !user[1] || !user[1].user) return [];
+
         const {name, color} = user[1].user;
 
         // const width = state.canvas.width;
         // WINDOW.INNER
-
-        if (!user[1] || !user[1].user) return [];
 
         let x = user[1].user.offsetX * state.canvas.width
         const y = user[1].user.offsetY * state.canvas.height;
@@ -126,13 +128,8 @@ const Canvas = ({client, roomName, split, side}) => {
 
      setOthers(offsetCursors) 
     })
-  }, [name, state.room])
+  }, [name, state.room, roomName])
 
-  // useEffect(() => {
-  //   window.addEventListener('keydown', handleUndoRedo);
-    
-  // }, [])
-  
   const handleCursorTracking = (e) => {
     const { clientX: x, clientY: y} = e
     
@@ -172,29 +169,10 @@ const Canvas = ({client, roomName, split, side}) => {
         name,
         color,
       }
-  })
-    
+    }) 
   }
 
-  // const handleUndoRedo = (e) => {
-  //   const { ctrlKey, key } = e;
-
-  //   if (!key || !ctrlKey) return;
-
-  //   if (/z/.test(key)) {
-  //     undoManager.undo()
-  //   }
-
-  //   if (/y/.test(key)) {
-  //     undoManager.redo();
-  //   }
-  // }
-
-  // if (!state.room) {
-  //   return <div>Loading...</div>
-  // }
-
-  return(
+  return (
     <div
       className="canvas-container"
       onMouseMove={handleCursorTracking}

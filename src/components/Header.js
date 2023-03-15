@@ -47,7 +47,6 @@ const Header = ({
   }
 
   const handleJoinNewRoom = () => {
-    console.log("joining a new room", {roomName})
     if (!roomName) {
       setMsg("Enter a room name")
       return;
@@ -157,7 +156,6 @@ const Header = ({
                 placeholder="any name"
                 value={name}
                 onChange={(e) => {
-                  console.log({e, target: e.target})
                   setName(e.target.value)
                 }}
                 autoFocus
