@@ -3,11 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@liveblocks/client": "^1.0.1",
-    "@liveblocks/react": "^1.0.1",
-    "@liveblocks/redux": "^1.0.1",
     "@reduxjs/toolkit": "^1.9.3",
-    "@symphony-rtc/client": "^0.0.4",
+    "@symphony-rtc/client": "^0.0.10",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
