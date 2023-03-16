@@ -37,11 +37,11 @@ const Canvas = ({client, roomName, split, side}) => {
     const newSyncedMap = room.newMap();
 
     const canvas = new fabric.Canvas(`canvas-${roomId}`, {skipOffscreen: true});
-    function resizeCanvas(e) {
+    function resizeCanvas() {
       if (split) return;
 
-      canvas.setHeight(height);
-      canvas.setWidth(width);
+      canvas.setHeight(window.innerHeight);
+      canvas.setWidth(window.innerWidth);
       canvas.renderAll();
     }
 

@@ -11,7 +11,7 @@ import BrushIcon from '../assets/imgs/icons/Brush.svg';
 import CursorIcon from '../assets/imgs/icons/Cursor.svg';
 import TextIcon from '../assets/imgs/icons/T.svg';
 import ColorIcon from '../assets/imgs/icons/color.png';
-// import SprayIcon from '../assets/imgs/icons/Spray.svg';
+import SprayIcon from '../assets/imgs/icons/Spray.svg';
 import ImageIcon from '../assets/imgs/icons/Image.svg';
 // import EraseIcon from '../assets/imgs/icons/Eraser.svg';
 import ClearIcon from '../assets/imgs/icons/Clear.svg';
@@ -71,7 +71,6 @@ const Toolbar = ({state, dispatch}) => {
                 setSelectedTool("shape");
                 const id = Date.now();
                 dispatch({type: "shape", color: color.hex, shape, id, creator: true})
-                //state.syncedMap.set('newShape', {color: color.hex, shape, id })
             }
         },
         {
@@ -112,9 +111,7 @@ const Toolbar = ({state, dispatch}) => {
             onClick: () => { 
                 const id = Date.now();
                 setSelectedTool('text') 
-
                 dispatch({type: "text", color: color.hex, id, creator: true}) 
-                state.syncedMap.set('newText', {color: color.hex, id })
             }
         },
         {

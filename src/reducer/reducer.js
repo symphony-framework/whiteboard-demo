@@ -75,7 +75,6 @@ const Reducer = (state, action) => {
     if (!state.canvas) return {...state}
 
     let newShape;
-    state.canvas.isDrawingMode = false;
     
     switch (action.shape) {
       case "square":
@@ -94,8 +93,10 @@ const Reducer = (state, action) => {
     state.canvas.add(newShape);
     if (action.creator) {
       const {id, color, shape, type} = action;
+
+      state.canvas.isDrawingMode = false;
       state.canvas.setActiveObject(newShape);
-      
+
       syncedMap.set(id, {type, action: "newShape", color, shape: shape})
     }
     return { ...state}
@@ -188,16 +189,18 @@ const Reducer = (state, action) => {
 
   if (type === "text") {
     if (!state.canvas) return {...state};
-    state.canvas.isDrawingMode = false;
     const text = newText(action.color, action.id, state.canvas)
 
-    state.canvas.add(text)
     if (action.creator) {
       const {id, color} = action
-      state.canvas.setActiveObject(text)
+
+      state.canvas.setActiveObject(text);
+      state.canvas.isDrawingMode = false;
+      
       syncedMap.set(id, {type, action: "newText", color})
     }
 
+    state.canvas.add(text)
     return {...state}
   }
 

@@ -72,7 +72,7 @@ export const newText = (color, id, canvas) => {
 
   const fontSize = canvas.height * 0.075;
   
-  return new fabric.Text('New', {
+  return new fabric.IText('Type here', {
       id, 
       left, 
       top,

@@ -165,6 +165,27 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         canvas.renderAll()
       }
 
+      if (action === 'textChange') {
+        const {color, text} = update;
+
+        if (!color || !text) return;
+
+        const textObj = findCanvasObject(canvas, id);
+
+        if (textObj) {
+          textObj.text = text;
+          canvas.renderAll();
+        }
+
+        if (!textObj) {
+          const newTextObj = newText(color, id, canvas);
+          newTextObj.text = text;
+          canvas.add(newTextObj)
+        }        
+
+        return;
+      }
+
       if (action === 'clear') {
         const object = findCanvasObject(canvas, id);
 
@@ -203,6 +224,8 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         const path = pencil.createPath(drawing.toString());
         path.set("strokeWidth", width)
         path.set("stroke", color)
+
+        path.drawingMode = true;
         path.id = id;
 
         canvas.add(path)     
@@ -222,8 +245,9 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         const drawing = pencil.convertPointsToSVGPath(offsetPoints);
 
         const path = pencil.createPath(drawing.toString());
-        path.set("strokeWidth", width)
-        path.set("stroke", color)
+        path.set("strokeWidth", width);
+        path.set("stroke", color);
+
         path.id = id;
         path.drawingMode = true;
 
