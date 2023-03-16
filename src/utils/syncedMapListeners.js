@@ -11,11 +11,12 @@ const newShape  = {
 
 const syncedMapListeners = (syncedMap, canvas, dispatch) => {
   syncedMap.observe(event => {
-
+    
     if (event.transaction.local) return;
 
     event.keysChanged.forEach(id => {
       const update = syncedMap.get(id)
+      console.log({id, update})
 
       if (!update) {
         return;
@@ -139,9 +140,15 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
           newObj = path;
         }
 
-        // if (type === 'image') {
+        if (type === 'image/upload') {
+          const { imageUrl } = update;
 
-        // }
+          if (!imageUrl) return;
+  
+          fabric.Image.fromURL(imageUrl, image => {
+            dispatch({type: "image/upload", image, id, creator: false})
+          }, {crossOrigin: 'anonymous'})
+        }
         
         if (scaleX) {
           newObj.set("scaleX", scaleX);
@@ -271,7 +278,7 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
       }
 
       if (action === 'image/upload') {
-        const { imageUrl} = update;
+        const { imageUrl } = update;
 
         if (!imageUrl) return;
 

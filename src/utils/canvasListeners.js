@@ -53,13 +53,32 @@ const canvasListeners = (syncedMap, canvas) => {
     return;
   })
 
-  canvas.on('after:render', function(e) {
+  canvas.on('selection:updated', function(options) {
+    const { selected } = options;
+
+    if (!selected.length) return;
+
+    const selectedObj = selected[0];
+
+    if (canvas.editingText && !selectedObj.text) {
+      canvas.editingText = null;
+    }
+
+    if (selectedObj.text) {
+      canvas.editingText = selectedObj.id;
+    }
+    
+  })
+  canvas.on('after:render', function(options) {
     if (canvas.editingText) {
       const textObject = findCanvasObject(canvas, canvas.editingText);
 
       if (!textObject) return;
 
       const { text } = textObject;
+
+      if (!text) return;
+
       const id = canvas.editingText;
 
       const otherVals = syncedMap.get(id)
@@ -76,7 +95,6 @@ const canvasListeners = (syncedMap, canvas) => {
   canvas.on('selection:created', function(options) {
     const {selected} = options;
 
-    console.log("created selection", {options, selected})
     if (!selected) return;
 
     const unfinishedDrawings = selected.some(obj => obj.drawingMode);
@@ -134,7 +152,6 @@ const canvasListeners = (syncedMap, canvas) => {
 
     if (canvas.isDrawingMode) {
       const {freeDrawingBrush} = canvas;
-      console.log('canvas drawing mode', {freeDrawingBrush})
       if (freeDrawingBrush.type === 'eraser') return;
 
 
@@ -193,16 +210,13 @@ const canvasListeners = (syncedMap, canvas) => {
 
         return;
     }
-    console.log("mouse up")
 
     if (canvas.isCurrentlyDrawing) {
-      console.log("mouse up")
       canvas.isCurrentlyDrawing = false;
 
       const { id, width, color, type } = canvas.freeDrawingBrush;
       options.currentTarget.id = id;
 
-      console.log("mouse up currently drawing", {id, width, color, type})
       if (!type) return;
 
       if (type === 'line') {    
