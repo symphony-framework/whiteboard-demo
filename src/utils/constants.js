@@ -5,8 +5,10 @@ import SquareIcon from '../assets/imgs/icons/Square.png'
 import TriangleIcon from '../assets/imgs/icons/Triangle.png'
 import CircleIcon from '../assets/imgs/icons/Circle.png'
 
-export const WS_URL = "wss://symphony-api.diegohernandezramirez.dev"
+const local ="ws://localhost:8001";
+let aws ="wss://symphony-api.diegohernandezramirez.dev/";
 
+export const WS_URL = local
 export const DEFAULT_CANVAS_BACKGROUND = "#f3f3f3"
 
 export const DEFAULT_CURSOR_COLOR = '#ffb61e';

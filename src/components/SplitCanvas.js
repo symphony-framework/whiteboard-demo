@@ -68,8 +68,18 @@ const SplitCanvas = ({client}) => {
   }, [canvas1Selected, canvas2Selected])
   
 
+  
   return (
     <> 
+      <div style={{
+        textAlign: "center",
+        marginTop: "15px"
+      }}>
+        <button onClick={handleSplitModeLeave}>
+          Leave Split Mode
+          </button>
+      </div>
+
       <div style={leftStyle}>
         { canvas1Selected ? 
           (<Canvas client={client} roomName={room1Name} split={true} side={1} />) :
@@ -77,7 +87,6 @@ const SplitCanvas = ({client}) => {
           <form>
             <input type="text" id="canvas-1-name" name="canvas-1-name" value={room1Name} onChange={e => setRoom1Name(e.target.value)} />
             <button onClick={handleRoom1Selection}>Join New Room </button>
-            <button onClick={handleSplitModeLeave}>Leave Split Mode</button>
           </form>
         </div>
         }
@@ -91,7 +100,6 @@ const SplitCanvas = ({client}) => {
           <form>
             <input type="text" id="canvas-2-name" name="canvas-2-name" value={room2Name} onChange={e => setRoom2Name(e.target.value)} />
             <button onClick={handleRoom2Selection}>Join New Room </button>
-            <button onClick={handleSplitModeLeave}>Leave Split Mode</button>
           </form>
         </div>
         }

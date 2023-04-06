@@ -54,81 +54,46 @@ const Canvas = ({client, roomName, split, side}) => {
     canvas.setHeight(height);
     canvas.setBackgroundColor('#f3f3f3')
     canvas.groupsInAction = {};
-    canvas.brushesInAction = {}
+    canvas.brushesInAction = {};
 
-    setupSyncedMapListeners(newSyncedMap, canvas, dispatch)
-    setupCanvasListeners(newSyncedMap, canvas)
+    setupSyncedMapListeners(newSyncedMap, canvas, dispatch);
+    setupCanvasListeners(newSyncedMap, canvas);
     
     dispatch({type: "init", newSyncedMap, canvas, room,})
 
     return () => {
       canvas.dispose();
-      client.leave();
+      client.leave(roomId);
     };
-  }, [roomId, client, split, height, width]);
+  }, [roomId, client, split, height, width, roomName]);
 
   useEffect(() => {
-
     if (!state.room) return;
 
     state.room.subscribe('others', () => {
       const users = state.room.getOthers();
-      
+
       const otherUsers = [...users].filter(item => {
         return item[1].user?.name !== name 
       });
 
-      // let userLeft, userJoined
-      // if (otherUsers.length < others.length) {
-      //   others.forEach(user => {
-
-      //     const inRoom = otherUsers.find(otherUser => 
-      //       otherUser[1].name === user.name
-      //     )
-
-      //     if (inRoom) return;
-      //     userLeft = user;
-      //   })
-        
-      //   // console.log({newOthers, userLeft})
-      // }
-
-      if (!otherUsers.length || !state.canvas) return;
+      if (!state.canvas) return;
       
       const offsetCursors = otherUsers.flatMap((user) => {
         if (!user || !user[1] || !user[1].user) return [];
 
         const {name, color} = user[1].user;
 
-        // const width = state.canvas.width;
-        // WINDOW.INNER
-
         let x = user[1].user.offsetX * state.canvas.width
         const y = user[1].user.offsetY * state.canvas.height;
 
-        // if (split) {
-        //   x += state.cavnas.width
-        // }
         return [{name, color, x, y}]
       });
-  
-      // if (otherUsers.length > others.length) {
-      //   otherUsers.forEach(user => {
-      //     const { name } = user[1].user
 
-      //     if (!name) return;
-      //     const inRoom = others.find(user => user.name === name);
-
-      //     if (!inRoom) {
-      //       userJoined = user[1].user;
-      //     }
-      //   })
-        
-      // }
-
-     setOthers(offsetCursors) 
+      setOthers(offsetCursors) 
     })
-  }, [name, state.room, roomName])
+
+  }, [name, state.room, roomName, state.canvas,])
 
   const handleCursorTracking = (e) => {
     const { clientX: x, clientY: y} = e
