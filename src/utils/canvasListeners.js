@@ -1,6 +1,8 @@
 import { drawLine, combinePaths } from "../shared/paths";
 import { findCanvasObject } from "./canvasHelpers";
 
+import { fabric } from "fabric";
+
 const canvasListeners = (syncedMap, canvas) => {
   if (!canvas) return;
 
@@ -15,7 +17,10 @@ const canvasListeners = (syncedMap, canvas) => {
     }
 
     if (id && !multiSelect) {
-      const otherVals = syncedMap.get(id)
+      const otherVals = syncedMap.get(id);
+
+      console.log({otherVals})
+
       syncedMap.set(id, {
         ...otherVals, 
         action: "newPosition",
@@ -75,14 +80,22 @@ const canvasListeners = (syncedMap, canvas) => {
 
       if (!textObject) return;
 
-      const { text } = textObject;
+      if (!textObject.hasOwnProperty("text")) return;
 
-      if (!text) return;
+      console.log("after render");
+      
+      const { text } = textObject;
 
       const id = canvas.editingText;
 
       const otherVals = syncedMap.get(id)
 
+      const oldText = otherVals.text;
+
+      console.log({oldText});
+
+      if (oldText === text) return;
+      
       syncedMap.set(id, {
         ...otherVals,
         action: 'textChange',
@@ -127,6 +140,12 @@ const canvasListeners = (syncedMap, canvas) => {
   })
 
   canvas.on('mouse:down', function(options) {
+    if (options.target) {
+      console.log('Clicked on', options.target);
+    } else {
+      console.log('Clicked on empty area');
+    }
+
     if (canvas.multiSelectId && !options.target) {
       canvas.multiSelectId = null;
     }
@@ -138,6 +157,7 @@ const canvasListeners = (syncedMap, canvas) => {
         canvas.isMultiSelectMode = false;
         return;
       }
+
       const groupId = canvas.multiSelectId
       const {_objects: objects} = target;
       const group = objects.map(obj => obj.id);
@@ -152,14 +172,12 @@ const canvasListeners = (syncedMap, canvas) => {
 
     if (canvas.isDrawingMode) {
       const {freeDrawingBrush} = canvas;
-      if (freeDrawingBrush.type === 'eraser') return;
-
 
       const {_points , width, color, } = freeDrawingBrush;
       const drawId = Date.now();
 
+      freeDrawingBrush.id = drawId
       canvas.isCurrentlyDrawing = true;
-      canvas.freeDrawingBrush.id = drawId
 
       const points = _points.map(point => {
         return {
@@ -212,6 +230,7 @@ const canvasListeners = (syncedMap, canvas) => {
     }
 
     if (canvas.isCurrentlyDrawing) {
+
       canvas.isCurrentlyDrawing = false;
 
       const { id, width, color, type } = canvas.freeDrawingBrush;
@@ -253,23 +272,41 @@ const canvasListeners = (syncedMap, canvas) => {
       }
 
       if (type === 'draw') {
-        const {path, left, top} = options.currentTarget
+        console.log("draw")
+        const {path, top, left} = options.currentTarget
+
+        syncedMap.delete('drawing');
+        syncedMap.delete('newDrawing');
 
         const offsetX = left / canvas.width;
         const offsetY = top / canvas.height;
 
+        console.log({path});
+        
+        const offsetPath = path.map(pathCommand => {
+          return [pathCommand[0], pathCommand[1] / canvas.width, pathCommand[2] / canvas.height]  
+        });
+
+        const points = canvas.freeDrawingBrush._points;
+        const offsetPoints = points.map(point => {
+          return {
+            offsetX: point.x / canvas.width,
+            offsetY: point.y / canvas.height,
+          }
+        });
+
+        console.log({offsetPath, points, offsetPoints})
         syncedMap.set(id, {
           type: 'finishDrawing',
           action: "finishDrawing", 
           color, width, 
           pathStr: path.toString(),
+          offsetPath,
           offsetX, offsetY,
         })
-
-        syncedMap.delete('newDrawing')
-        syncedMap.delete('drawing')
-
       }
+
+      delete canvas.freeDrawingBrush.id;
     }
   })
 
@@ -362,6 +399,7 @@ const canvasListeners = (syncedMap, canvas) => {
 
       if (!multiSelect) {
         const otherVals = syncedMap.get(id);
+
         syncedMap.set(id, {
           ...otherVals,
           action: "newPosition", 

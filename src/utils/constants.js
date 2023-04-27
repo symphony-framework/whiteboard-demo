@@ -6,16 +6,18 @@ import TriangleIcon from '../assets/imgs/icons/Triangle.png'
 import CircleIcon from '../assets/imgs/icons/Circle.png'
 
 const local ="ws://localhost:8001";
-let aws ="wss://symphony-api.diegohernandezramirez.dev/";
+const demo = 'wss://symphony-demo.diegohernandezramirez.dev'
+let aws ="wss://symphony.diegohernandezramirez.dev/";
 
-export const WS_URL = local
+export const WS_URL = demo
 export const DEFAULT_CANVAS_BACKGROUND = "#f3f3f3"
 
-export const DEFAULT_CURSOR_COLOR = '#ffb61e';
 export const DEFAULT_IMAGE_WIDTH = 480;
-export const DEFAULT_IMAGE_SCALE = 0.15;
-export const DEFAULT_BRUSH_WIDTH = 0.02;
-export const DEFAULT_ERASER_WIDTH = 0.1;
+export const DEFAULT_IMAGE_SCALE = 0.1;
+
+export const DEFAULT_BRUSH_WIDTH = 0.005;
+
+export const DEFAULT_CANVAS_WIDTH = 1000;
 
 export const INITIAL_STATE = {
   room: null,
@@ -24,6 +26,14 @@ export const INITIAL_STATE = {
   color: "#f3f3f3",
   brushWidth: DEFAULT_BRUSH_WIDTH,
 }
+
+export const brandColors = [
+  '#29ea8a',
+  '#7cfcb9',
+  '#41c9f9',
+  '#3e86fa',
+  '#15376e'
+];
 
 export const shapeOptions = [
   {name: 'square', icon: SquareIcon},

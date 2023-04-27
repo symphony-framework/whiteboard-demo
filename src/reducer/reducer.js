@@ -2,10 +2,8 @@ import { fabric } from "fabric";
 import { newSquare, newTriangle, newCircle, newText } from "../shared/draw";
 import { drawLine, combinePaths } from "../shared/paths"
 
-// import {syncedMap} from "../utils/symphony.config";
-
-// import { DEFAULT_CANVAS_BACKGROUND, DEFAULT_ERASE_WIDTH } from "../utils/constants";
-import { DEFAULT_IMAGE_WIDTH, DEFAULT_IMAGE_SCALE } from "../utils/constants";
+import { DEFAULT_IMAGE_SCALE } from "../utils/constants";
+import { randColor } from "../utils/canvasHelpers";
 
 const Reducer = (state, action) => {
   const { type } = action;
@@ -16,7 +14,12 @@ const Reducer = (state, action) => {
     
     if (!newSyncedMap || !canvas || !room) return {...state}
 
-    return {...state, syncedMap: newSyncedMap, canvas, room,}
+    return {
+      ...state, 
+      syncedMap: newSyncedMap, 
+      canvas, room, 
+      color: randColor(),
+    }
   }
 
   if (!syncedMap) return {...state};
@@ -35,10 +38,11 @@ const Reducer = (state, action) => {
     state.canvas.freeDrawingBrush = new fabric.PencilBrush(state.canvas);
     state.canvas.freeDrawingBrush.type = brush
 
-    state.canvas.freeDrawingBrush.width = state.brushWidth * state.canvas.width;
+    /// BRUSH SCALE
+    state.canvas.freeDrawingBrush.width = state.canvas.brushWidth * state.canvas.width;
+    
     state.canvas.freeDrawingBrush.color = action.color;
     state.canvas.isDrawingMode = true;
-    state.canvas.freeDrawingCursor = 'url("icons/Brush.svg") 50 0, auto'
     return {...state};
   }
 
@@ -48,10 +52,10 @@ const Reducer = (state, action) => {
     const { width } = action;
 
     if (!width) return;
-    // const newWidth = width / 100;
 
+    state.canvas.brushWidth = width;
     state.canvas.freeDrawingBrush.width = width * state.canvas.width;
-    return {...state, brushWidth: width};
+    return {...state};
   }
 
   if (type === 'color') {
@@ -143,49 +147,33 @@ const Reducer = (state, action) => {
   }
 
   if (type === 'finishDrawing') {
-    const { id, width, color, pathStr, offsetX, offsetY } = action;
-
-    const getPaths = () => {
+    const { id, width, color, offsetPath } = action;
+    
+    const clearOldPath = () => {
       state.canvas.getObjects().forEach(obj => {
         if (+obj.id !== +id) return;
         state.canvas.remove(obj)
       })
     }
 
-    getPaths()
+    clearOldPath();
 
+    const points = offsetPath.map((pathCommand, idx) => [idx === 0 ? "M" : "L", pathCommand[1] * state.canvas.width, pathCommand[2] * state.canvas.height]);
     const pencil = new fabric.PencilBrush(state.canvas);
-    const path = pencil.createPath(pathStr);
+    const path = pencil.createPath(points.toString());
 
-    const left = state.canvas.width * offsetX;
-    const top = state.canvas.height * offsetY;
+    path.set({
+      id, 
+      strokeWidth: width,
+      stroke: color,
+      selectable: true,
+      hasControls: true,
+      drawingMode: false,
+    });
 
-    path.set("strokeWidth", width)
-    path.set("stroke", color)
-    path.id = id;
-
-    path.set("left", left);
-    path.set("top", top);
-
-    state.canvas.add(path)
-    return {...state}
+    state.canvas.add(path);
+    return {...state};
   }
-  
-  // if (type === 'eraser') {
-  //   if(!state.canvas) return {...state};
-
-  //   state.canvas.freeDrawingBrush = new fabric.PencilBrush(state.canvas);
-  //   state.canvas.freeDrawingBrush.width = DEFAULT_ERASER_WIDTH * state.canvas.width;
-  //   state.canvas.freeDrawingBrush.color = DEFAULT_CANVAS_BACKGROUND;
-  //   state.canvas.isDrawingMode = true;
-  //   state.canvas.isErasingMode = true;
-
-  //   state.canvas.freeDrawingBrush.type = type;
-  //   state.canvas.freeDrawingCursor = 'url("icons/Eraser.svg") 30 10, auto'
-  //   state.canvas.freeDrawingBrush.inverted = true;
-
-  //   return {...state};
-  // }
 
   if (type === "text") {
     if (!state.canvas) return {...state};
@@ -240,28 +228,22 @@ const Reducer = (state, action) => {
   }
 
   if (type === 'image/upload') {
-    const { image, id, creator } = action
+    const { image, id, creator, } = action
     if (!state.canvas || !image) return {...state};
-
-
-    // const width = state.canvas.width;
-
-    image.scaleToWidth( DEFAULT_IMAGE_WIDTH);
-    image.set('left', state.canvas.width * DEFAULT_IMAGE_SCALE)
-    image.set('top', state.canvas.height * DEFAULT_IMAGE_SCALE)
     
+    image.set('left', state.canvas.width * DEFAULT_IMAGE_SCALE);
+    image.set('top', state.canvas.height * DEFAULT_IMAGE_SCALE);
     image.id = id;
 
-    state.canvas.add(action.image)
+    state.canvas.add(image);
 
     if (creator) {
       const imageUrl = image.toDataURL();
-      syncedMap.set(id, {type, imageUrl, action: "image/upload"})
+      syncedMap.set(id, {type, imageUrl, action: type})
       state.canvas.isDrawingMode = false;
     }
     
-    return {...state}
-  }
+    return {...state}  }
 
   if (type === 'download') {
     if(!state.canvas){
