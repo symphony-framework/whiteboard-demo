@@ -21,8 +21,6 @@ const Cursor = ({ x, y, color, name }) => {
     marginLeft: '5px',
   }
 
-  console.log({color});
-
   return (
     <span style={cursorStyle}>
       <svg stroke={color} fill='black' xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 39.989 39.988">

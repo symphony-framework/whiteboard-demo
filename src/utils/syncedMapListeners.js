@@ -17,7 +17,6 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
 
     event.keysChanged.forEach(id => {
       const update = syncedMap.get(id)
-      console.log({id, update})
 
       if (!update) {
         return;
@@ -39,8 +38,6 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         if (!id || !offsetX || !offsetY ) return;
         
         const movedObj = findCanvasObject(canvas, id)
-
-        console.log("new pos", {update, movedObj})
 
         if (movedObj instanceof fabric.Image) {
           if (scaleX) {
@@ -171,8 +168,6 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         if (type === 'image/upload') {
           const { imageUrl, offsetX, offsetY, scaleX, scaleY } = update;
           
-          console.log({update});
-
           fabric.Image.fromURL(imageUrl, image => {
             
             // Calculate new scale factor based on received values
@@ -340,7 +335,6 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         if (!imageUrl) return;
 
         fabric.Image.fromURL(imageUrl, image => {
-          console.log("image upload", {image, action, type: update.type, imageUrl});
           dispatch({type: action, image, id, creator: false})
         }, {crossOrigin: 'anonymous'})
       }      

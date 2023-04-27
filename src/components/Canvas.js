@@ -15,7 +15,6 @@ import background from "../assets/imgs/background/logo.png";
 
 import { 
   DEFAULT_BRUSH_WIDTH,
-  DEFAULT_CANVAS_WIDTH,
   INITIAL_STATE,
   customCursorUrl 
 } from '../utils/constants';
@@ -77,7 +76,6 @@ const Canvas = ({client, roomName, split, side}) => {
       originY: 'center'
     });
 
-    // canvas.brushScale = canvas.width / DEFAULT_CANVAS_WIDTH;
     canvas.brushWidth = DEFAULT_BRUSH_WIDTH;
     canvas.groupsInAction = {};
     canvas.brushesInAction = {};
@@ -88,6 +86,7 @@ const Canvas = ({client, roomName, split, side}) => {
     dispatch({type: "init", newSyncedMap, canvas, room,})
 
     return () => {
+      window.removeEventListener('resize', resizeCanvas, false);
       canvas.dispose();
       
       client.leave(roomId);
@@ -146,8 +145,6 @@ const Canvas = ({client, roomName, split, side}) => {
   }
 
   const handleUserSettingsChange = (newVals) => {
-    console.log("handling user settings change", {newVals})
-
     const {color, name} = newVals
     if (!color || !name) return;
 

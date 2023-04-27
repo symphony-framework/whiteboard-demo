@@ -1,8 +1,6 @@
 import { drawLine, combinePaths } from "../shared/paths";
 import { findCanvasObject } from "./canvasHelpers";
 
-import { fabric } from "fabric";
-
 const canvasListeners = (syncedMap, canvas) => {
   if (!canvas) return;
 
@@ -18,8 +16,6 @@ const canvasListeners = (syncedMap, canvas) => {
 
     if (id && !multiSelect) {
       const otherVals = syncedMap.get(id);
-
-      console.log({otherVals})
 
       syncedMap.set(id, {
         ...otherVals, 
@@ -82,17 +78,11 @@ const canvasListeners = (syncedMap, canvas) => {
 
       if (!textObject.hasOwnProperty("text")) return;
 
-      console.log("after render");
-      
       const { text } = textObject;
-
       const id = canvas.editingText;
 
       const otherVals = syncedMap.get(id)
-
       const oldText = otherVals.text;
-
-      console.log({oldText});
 
       if (oldText === text) return;
       
@@ -140,11 +130,6 @@ const canvasListeners = (syncedMap, canvas) => {
   })
 
   canvas.on('mouse:down', function(options) {
-    if (options.target) {
-      console.log('Clicked on', options.target);
-    } else {
-      console.log('Clicked on empty area');
-    }
 
     if (canvas.multiSelectId && !options.target) {
       canvas.multiSelectId = null;
@@ -272,7 +257,6 @@ const canvasListeners = (syncedMap, canvas) => {
       }
 
       if (type === 'draw') {
-        console.log("draw")
         const {path, top, left} = options.currentTarget
 
         syncedMap.delete('drawing');
@@ -280,22 +264,11 @@ const canvasListeners = (syncedMap, canvas) => {
 
         const offsetX = left / canvas.width;
         const offsetY = top / canvas.height;
-
-        console.log({path});
         
         const offsetPath = path.map(pathCommand => {
           return [pathCommand[0], pathCommand[1] / canvas.width, pathCommand[2] / canvas.height]  
         });
-
-        const points = canvas.freeDrawingBrush._points;
-        const offsetPoints = points.map(point => {
-          return {
-            offsetX: point.x / canvas.width,
-            offsetY: point.y / canvas.height,
-          }
-        });
-
-        console.log({offsetPath, points, offsetPoints})
+ 
         syncedMap.set(id, {
           type: 'finishDrawing',
           action: "finishDrawing", 
@@ -350,7 +323,6 @@ const canvasListeners = (syncedMap, canvas) => {
     const { 
       id, 
       left, top, 
-      width, height, 
       scaleX, scaleY,
       flipX, flipY,
     } = options.target
