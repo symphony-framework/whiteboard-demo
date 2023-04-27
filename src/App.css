@@ -61,17 +61,6 @@ header.show span {
 }
 
 header.hidden {
-  /* margin-top: -15px;
-  left:0;
-  right:0;
-  margin-left:auto;
-  margin-right:auto; */
-  /* display: block;
-  margin-top: -15px;
-  left:0;
-  right:0;
-  margin-left:auto;
-  margin-right:auto; */
   position: absolute;
   z-index: 3;
   border: 0px;
@@ -116,7 +105,7 @@ div.other-user-card {
   top: 10px;
   left: 10px;
   z-index: 1;
-  background-color: rgb(153, 139, 235);
+  background-color: #3e86fa;
 }
 
 .icon {
@@ -169,20 +158,15 @@ div.other-user-card {
   appearance: none;
   width: 25px;
   height: 25px;
-  background: #04AA6D;
+  background: #3e86fa;
   cursor: pointer;
 }
 
 .slider::-moz-range-thumb {
   width: 25px;
   height: 25px;
-  background: #04AA6D;
+  background: #3e86fa;
   cursor: pointer;
-}
-
-.slider-value-example {
-  /* display: absolute;
-  z-index: 5; */
 }
 
 div.canvas-container {

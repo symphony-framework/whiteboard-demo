@@ -11,17 +11,20 @@ import Cursor from './PresenceCursor';
 import setupSyncedMapListeners from "../utils/syncedMapListeners";
 import setupCanvasListeners from '../utils/canvasListeners';
 
+import background from "../assets/imgs/background/logo.png";
+
 import { 
+  DEFAULT_BRUSH_WIDTH,
+  DEFAULT_CANVAS_WIDTH,
   INITIAL_STATE,
-  DEFAULT_CURSOR_COLOR,
   customCursorUrl 
 } from '../utils/constants';
 
-import { randName } from '../utils/canvasHelpers';
+import { randColor, randName } from '../utils/canvasHelpers';
 
 const Canvas = ({client, roomName, split, side}) => {
   const [state, dispatch] = useReducer(canvasReducer, INITIAL_STATE)
-  const [cursorColor, setCursorColor] = useState(DEFAULT_CURSOR_COLOR)
+  const [cursorColor, setCursorColor] = useState(randColor())
   const [name, setName] = useState(randName())
   const [others, setOthers] = useState([])
 
@@ -34,25 +37,48 @@ const Canvas = ({client, roomName, split, side}) => {
 
   useEffect(() => {
     const room = client.enter(roomId);
-    const newSyncedMap = room.newMap();
-
+    const newSyncedMap = room.newMap("whiteboard");
+    
     const canvas = new fabric.Canvas(`canvas-${roomId}`, {skipOffscreen: true});
     function resizeCanvas() {
       if (split) return;
 
-      canvas.setHeight(window.innerHeight);
-      canvas.setWidth(window.innerWidth);
-      canvas.renderAll();
+        canvas.setHeight(window.innerHeight || height);
+        canvas.setWidth(window.innerWidth || width);
+        canvas.renderAll();
     }
 
     window.addEventListener('resize', resizeCanvas, false);
     canvas.defaultCursor = `url(" ${customCursorUrl} "), auto`;
+    canvas.freeDrawingCursor = 'url("/icons/Brush.svg") 50 0, auto'
 
     const {innerWidth: width, innerHeight: height} = window;
 
     canvas.setWidth(split ? width / 2 : width);
     canvas.setHeight(height);
-    canvas.setBackgroundColor('#f3f3f3')
+    canvas.setBackgroundColor('#f3f3f3');
+
+    const imageScale = 0.3;
+    const center = canvas.getCenter();
+
+    canvas.setBackgroundImage(background, (image) => {
+      if (!image) return;
+
+      canvas.renderAll();
+    }, {
+      opacity: 0.1,
+      backgroundImageStretch: false,
+      top: center.top,
+      left: center.left,
+
+      scaleX: imageScale,
+      scaleY: imageScale,
+      originX: 'center',
+      originY: 'center'
+    });
+
+    // canvas.brushScale = canvas.width / DEFAULT_CANVAS_WIDTH;
+    canvas.brushWidth = DEFAULT_BRUSH_WIDTH;
     canvas.groupsInAction = {};
     canvas.brushesInAction = {};
 
@@ -63,6 +89,7 @@ const Canvas = ({client, roomName, split, side}) => {
 
     return () => {
       canvas.dispose();
+      
       client.leave(roomId);
     };
   }, [roomId, client, split, height, width, roomName]);

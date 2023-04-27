@@ -3,6 +3,7 @@ import { findCanvasObject } from './canvasHelpers'
 import { drawLine, combinePaths } from "../shared/paths"
 
 import { newSquare, newCircle, newTriangle, newText } from '../shared/draw';
+
 const newShape  = {
   'square': newSquare,
   'circle': newCircle,
@@ -39,6 +40,36 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         
         const movedObj = findCanvasObject(canvas, id)
 
+        console.log("new pos", {update, movedObj})
+
+        if (movedObj instanceof fabric.Image) {
+          if (scaleX) {
+            const newScaleX = scaleX / 1;
+            movedObj.set({
+              scaleX: newScaleX,
+            });
+          }
+
+          if (scaleY) {
+            const newScaleY = scaleY / 1;
+            movedObj.set({
+              scaleY: newScaleY,
+            });
+          }
+
+          if (angle) {
+            movedObj.set("angle", angle)
+          }
+
+
+          movedObj.set("left", canvas.width * offsetX);
+          movedObj.set("top", canvas.height * offsetY);
+
+          movedObj.setCoords();
+          canvas.renderAll();
+          return;
+        }
+
         if (movedObj) {
           if (scaleX) {
             movedObj.set("scaleX", scaleX);
@@ -56,7 +87,10 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
 
           movedObj.set("left", canvas.width * offsetX);
           movedObj.set("top", canvas.height * offsetY);
-          canvas.renderAll()
+
+          movedObj.setCoords();
+
+          canvas.renderAll();
           return;
         }
 
@@ -108,13 +142,7 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
             
             const linePath = drawLine(start, end)
             newObj = combinePaths(linePath, color, width)
-            // onePath.id = id;
-        
-            // state.canvas.add(onePath)
-            // return {...state};
           }
-          // dispatch({id, type, startPoint, endPoint, color, width});
-
         }
 
         if (type === 'finishDrawing') {
@@ -122,14 +150,14 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
 
           if (!id || !width || !color || !pathStr) return;
   
-          const getPaths = () => {
+          const clearOldPath = () => {
             canvas.getObjects().forEach(obj => {
               if (+obj.id !== +id) return;
               canvas.remove(obj)
             })      
           }
       
-          getPaths()
+          clearOldPath()
       
           const pencil = new fabric.PencilBrush(canvas);
           const path = pencil.createPath(pathStr);
@@ -141,12 +169,40 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         }
 
         if (type === 'image/upload') {
-          const { imageUrl } = update;
+          const { imageUrl, offsetX, offsetY, scaleX, scaleY } = update;
+          
+          console.log({update});
 
-          if (!imageUrl) return;
-  
           fabric.Image.fromURL(imageUrl, image => {
-            dispatch({type: "image/upload", image, id, creator: false})
+            
+            // Calculate new scale factor based on received values
+            if (scaleX) {
+              const newScaleX = scaleX / 1;
+              image.set({
+                scaleX: newScaleX,
+              });
+            }
+  
+            if (scaleY) {
+              const newScaleY = scaleY / 1;
+              image.set({
+                scaleY: newScaleY,
+              });
+            }
+  
+            if (angle) {
+              movedObj.set("angle", angle)
+            }
+  
+  
+            image.set("left", canvas.width * offsetX);
+            image.set("top", canvas.height * offsetY);
+            
+            image.id = id;
+
+            image.setCoords();
+
+            canvas.add(image);
           }, {crossOrigin: 'anonymous'})
         }
         
@@ -166,6 +222,8 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
 
         newObj.set("left", canvas.width * offsetX);
         newObj.set("top", canvas.height * offsetY);
+        newObj.setCoords();
+
         newObj.id = id;
 
         canvas.add(newObj)
@@ -173,9 +231,8 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
       }
 
       if (action === 'textChange') {
+        if (!update.hasOwnProperty("text") || !update.hasOwnProperty("color")) return;
         const {color, text} = update;
-
-        if (!color || !text) return;
 
         const textObj = findCanvasObject(canvas, id);
 
@@ -262,11 +319,11 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
       }
 
       if (action === "finishDrawing") {
-        const {width, color, pathStr, offsetX, offsetY } = update;
+        const {width, color, pathStr, offsetX, offsetY, offsetPath } = update;
 
         if (!id || !width || !color || !pathStr || !offsetX || !offsetY) return;
-
-        dispatch({type: "finishDrawing", id, width, color, pathStr, offsetX, offsetY})
+        
+        dispatch({type: "finishDrawing", id, width, color, pathStr, offsetX, offsetY, offsetPath});
       }
 
       if (action === 'newLine') {
@@ -283,7 +340,8 @@ const syncedMapListeners = (syncedMap, canvas, dispatch) => {
         if (!imageUrl) return;
 
         fabric.Image.fromURL(imageUrl, image => {
-          dispatch({type: "image/upload", image, id, creator: false})
+          console.log("image upload", {image, action, type: update.type, imageUrl});
+          dispatch({type: action, image, id, creator: false})
         }, {crossOrigin: 'anonymous'})
       }      
     })

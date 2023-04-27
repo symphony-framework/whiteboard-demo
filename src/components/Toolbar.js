@@ -11,9 +11,8 @@ import BrushIcon from '../assets/imgs/icons/Brush.svg';
 import CursorIcon from '../assets/imgs/icons/Cursor.svg';
 import TextIcon from '../assets/imgs/icons/T.svg';
 import ColorIcon from '../assets/imgs/icons/color.png';
-import SprayIcon from '../assets/imgs/icons/Spray.svg';
 import ImageIcon from '../assets/imgs/icons/Image.svg';
-// import EraseIcon from '../assets/imgs/icons/Eraser.svg';
+
 import ClearIcon from '../assets/imgs/icons/Clear.svg';
 
 import ShapeIcon from '../assets/imgs/icons/Shape.svg';
@@ -30,8 +29,9 @@ const Toolbar = ({state, dispatch}) => {
     const [colorShow, setColorShow] = useState(false);
     const [selectedTool, setSelectedTool] = useState("cursor");
 
+    // const [imagePreview, showImagePreview] = useState(false);
     const handleColorClose = () => { 
-      dispatch({type: "color", color: color.hex,})
+      dispatch({type: "color", color: color.hex,});
       setColorShow(false);
       return;
     }
@@ -46,6 +46,9 @@ const Toolbar = ({state, dispatch}) => {
           const objectUrl = URL.createObjectURL(file);
             
           fabric.Image.fromURL(objectUrl, image => {
+            if (!image) return;
+            // showImagePreview(image);
+            
             dispatch(({type:"image/upload", image, id, creator: true}))
           }, { crossOrigin: 'anonymous' });
         }
@@ -94,15 +97,7 @@ const Toolbar = ({state, dispatch}) => {
                 handleColorShow();
             }
         },
-        // {
-        //     name: "eraser",
-        //     icon: EraseIcon,
-        //     type: "button",
-        //     onClick: () => { 
-        //         dispatch({type: 'eraser'}); 
-        //         setSelectedTool('eraser') 
-        //     }
-        // },
+
         {
             name: "text",
             icon: TextIcon,
@@ -147,7 +142,8 @@ const Toolbar = ({state, dispatch}) => {
                 if (button.type === "colorselect")  return null;
 
                 if (button.type === "button")       return <ToolButton key={button.name} {...button} selected={selectedTool} onPhotoUpload={handlePhotoUpload} />
-    
+                
+                return null;
             })}
 
             <Modal show={colorShow} fullscreen={"md-down"} onHide={handleColorClose}>
@@ -179,9 +175,9 @@ const ToolButton = ({name, icon, onClick, selected, onPhotoUpload}) => {
                 style={style}
             >
 
-                <img src={icon} className="icon"/>
+                <img alt={`${name}-icon}`} src={icon} className="icon"/>
             </div>
-             { name == 'image' ? <input type="file" className="d-none" onChange={onPhotoUpload} /> : null}
+             { name === 'image' ? <input type="file" className="d-none" onChange={onPhotoUpload} /> : null}
             </label>
         </div>   
     )
@@ -201,7 +197,7 @@ export const DropDownButton = ({name, items, icon, onClick, selected, width, dis
                 id="dropdown-basic"
                 style={style}
             >
-                <img src={icon} className="icon"/>
+                <img alt={`${name}-icon}`}  src={icon} className="icon"/>
             </Dropdown.Toggle>
             <Dropdown.Menu style={{textAlign: "center"}}>
                 {
@@ -210,7 +206,7 @@ export const DropDownButton = ({name, items, icon, onClick, selected, width, dis
                             key={item.name} 
                             onClick={() => onClick(item.name)}
                             >
-                            <img src={item.icon} className="icon"/>
+                            <img alt={`${name}-icon}`} src={item.icon} className="icon"/>
                         </Dropdown.Item>
 
                     ))
@@ -219,7 +215,7 @@ export const DropDownButton = ({name, items, icon, onClick, selected, width, dis
             {
                 name === 'brush' ? (
                     < WidthSlider 
-                        currentVal={width * 100}
+                        currentVal={width}
                         onWidthChange={(newWidth) => dispatch({type: 'brushWidth', width: newWidth})}
                     /> 
                 ) : null
