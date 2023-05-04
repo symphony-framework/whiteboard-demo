@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 
 import Canvas from "./Canvas";
+import UserNotification from "./Notification";
 import { useNavigate } from "react-router-dom";
 
 
 const SplitCanvas = ({client}) => {
+  const [notification, setNotification] = useState({});
+
   const [room1Name, setRoom1Name] = useState("")
   const [room2Name, setRoom2Name] = useState("")
   // const [resizing, setResizing] = useState(false)
@@ -14,22 +17,9 @@ const SplitCanvas = ({client}) => {
 
   const nav = useNavigate();
 
-  const leftStyle = {
-    display: 'inline-block',
-    left: '0',
-    top: '0',
-    width: '50%',
-    height: '100%',
+  const handleNotification = (msg) => {
+    setNotification(msg);
   }
-
-  const rightStyle = {
-    display: 'inline-block',
-    top: '0',
-    right: '0',
-    width: '50%',
-    height: '100%',
-  }
-
 
   const handleSplitModeLeave = (e) => {
     e.preventDefault();
@@ -40,7 +30,14 @@ const SplitCanvas = ({client}) => {
     e.preventDefault();
     e.stopPropagation()
 
+    console.log({room1Name});
+    if (!room1Name) {
+      setNotification({success: false, msg: "Enter Room ID", room: 1});
+      return;
+    }
+
     if (canvas2Selected && room1Name === room2Name) {
+      setNotification({success: false, msg: "Cannot enter the same room", room: 1});
       return;
     }
 
@@ -51,13 +48,18 @@ const SplitCanvas = ({client}) => {
     e.preventDefault();
     e.stopPropagation()
 
+    if (!room2Name) {
+      setNotification({success: false, msg: "Enter Room ID", room: 2});
+      return;
+    }
+
     if (canvas1Selected && room1Name === room2Name) {
+      setNotification({success: false, msg: "Cannot enter the same room", room: 2});
       return;
     }
 
     setCanvas2Selected(true)
   }
-  
 
   useEffect(() => {
     if (canvas1Selected && canvas2Selected) {
@@ -71,35 +73,62 @@ const SplitCanvas = ({client}) => {
   
   return (
     <> 
-      <div style={{
-        textAlign: "center",
-        marginTop: "15px"
-      }}>
-        <button onClick={handleSplitModeLeave}>
+      <div className="leave-split-mode">
+        <button 
+          className="join-room"   
+          onClick={handleSplitModeLeave}
+        >
           Leave Split Mode
           </button>
       </div>
 
-      <div style={leftStyle}>
+      <div className="split-left">
         { canvas1Selected ? 
           (<Canvas client={client} roomName={room1Name} split={true} side={1} />) :
           <div className="split-mode-select">
           <form>
-            <input type="text" id="canvas-1-name" name="canvas-1-name" value={room1Name} onChange={e => setRoom1Name(e.target.value)} />
-            <button onClick={handleRoom1Selection}>Join New Room </button>
+            <UserNotification 
+              msg={notification.room === 1 ? notification.msg : ""} 
+              onMessage={handleNotification} 
+              success={notification.success} />
+            <input 
+              type="text" 
+              id="canvas-1-name" 
+              name="canvas-1-name" 
+              className="join-room"
+              value={room1Name} 
+              onChange={e => setRoom1Name(e.target.value)} />
+            <button 
+              className="join-room"
+              onClick={handleRoom1Selection}>
+                Join New Room 
+            </button>
           </form>
         </div>
         }
       </div>
 
-      <div style={rightStyle}>
+      <div className="split-right">
         { canvas2Selected ? 
           (<Canvas client={client} roomName={room2Name} split={true} side={2} />) :
           
           <div className="split-mode-select">
           <form>
-            <input type="text" id="canvas-2-name" name="canvas-2-name" value={room2Name} onChange={e => setRoom2Name(e.target.value)} />
-            <button onClick={handleRoom2Selection}>Join New Room </button>
+            <UserNotification 
+              msg={notification.room === 2 ? notification.msg : ""} 
+              onMessage={handleNotification} 
+              success={notification.success} />
+            <input 
+              type="text" id="canvas-2-name" 
+              name="canvas-2-name" 
+              className="join-room"
+              value={room2Name} 
+              onChange={e => setRoom2Name(e.target.value)} />
+            <button 
+              className="join-room"
+              onClick={handleRoom2Selection}>
+                Join New Room 
+            </button>          
           </form>
         </div>
         }

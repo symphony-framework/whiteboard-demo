@@ -3,95 +3,9 @@ html {
 }
 
 .App {
-  background-color: #3492df;
+  background-color: #3e86fa;
   overflow: hidden;
 }
-
-div.main-bottom {
-  background-color: white; 
-  text-align: center; 
-  padding: 50px
-}
-
-div.main-bottom button {
-  background-color: #3492df;
-  color: white
-}
-
-div.split-mode-select {
-  margin: auto;
-  text-align: center;
-  margin-top: 250px;
-}
-
-
-header.show {
-  position: absolute;
-  z-index: 1;
-  background-color: rgb(206, 199, 245);
-
-  top: 10px;
-  right: 10px;
-  margin-right:auto;
-
-
-  max-width: 40%;
-  border-radius: 5px;
-  text-align: center;
-}
-
-header.show h1 {
-  display: inline-block;
-  padding: 0 10px;
-}
-
-header.show .user-count {
-  padding: 0 10px;
-}
-
-header.show span {
-  display: none;
-  /* display: inline-block; */
-  position: absolute;
-  bottom: -25px;
-  right: 0;
-
-  font-size: 20px;
-  cursor: pointer;
-}
-
-header.hidden {
-  position: absolute;
-  z-index: 3;
-  border: 0px;
-  padding: none;
-  top: 10px;
-  right: 10px;
-}
-
-button.show-header {
-  border-radius: 5px;
-  background-color: rgb(153, 139, 235);
-    border: transparent;  
-}
-
-header.show:hover span {
-  display: inline-block;
-}
-
-header.show img {
-}
-
-div.other-user-card {
-  padding: 0px;
-}
-/* .header-button {
-
-} */
-/* header:hover {
-  z-index: -1;
-  display: none;
-} */
 
 #canvas {
   box-shadow: 5px 5px 5px rgb(87, 79, 79);
@@ -112,28 +26,36 @@ div.other-user-card {
   width: 30px;
   height: 30px;
 }
+
 .toolbar-button {
   border: none;
   background-color: transparent;
 }
+
 .toolbar-button:hover {
   background-color: #bbdefb;
 }
+
 #dropdown-basic::after {
   content: none;
 }
+
 #dropdown-basic:focus{
   outline: none;
 }
+
 .font-weight-bold{
   font-weight:900
 }
+
 .text-red{
   color: #ff0000;
 }
+
 .font-size-xl{
   font-size: 40px;
 }
+
 .panel-height{
   height: calc( 100vh - 220px );
 }
@@ -171,4 +93,136 @@ div.other-user-card {
 
 div.canvas-container {
   position: absolute;
+}
+
+div.other-user-card {
+  padding: 0px;
+}
+
+div.main {
+  text-align: center;
+}
+
+div.main .logo {
+  object-fit: contain;
+  width: 10%;
+  min-width: 100px;
+  max-width: 200px;
+  margin: 20px 0;
+}
+
+div.main h1 {
+  font-family: 'Along Sans s2 SemiBold';
+  font-size: 5rem;
+  color: white;
+  margin: 20px 0;
+}
+
+div.main-bottom {
+  background: white;
+  padding-top: 50px;
+}
+
+div.main-bottom button {
+  margin: 0 auto;
+}
+
+div.main button:hover {
+  opacity: 0.7;
+}
+
+div.split-mode-select {
+  margin: auto;
+  text-align: center;
+  margin-top: 250px;
+}
+
+div.split-left {
+  display: inline-block;
+  left: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+}
+
+div.split-right {
+  display: inline-block;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+}
+
+div.leave-split-mode {
+  text-align: center;
+  margin-top: 10px;
+}
+
+header.show {
+  position: absolute;
+  z-index: 1;
+  background-color: rgb(206, 199, 245);
+
+  top: 10px;
+  right: 10px;
+  margin-right:auto;
+
+
+  max-width: 40%;
+  border-radius: 5px;
+  text-align: center;
+}
+
+header.show h1 {
+  display: inline-block;
+  padding: 0 10px;
+}
+
+header.show .user-count {
+  padding: 0 10px;
+}
+
+header.show span {
+  display: none;
+  position: absolute;
+  bottom: -25px;
+  right: 0;
+
+  font-size: 20px;
+  cursor: pointer;
+}
+
+header.hidden {
+  position: absolute;
+  z-index: 3;
+  border: 0px;
+  padding: none;
+  top: 10px;
+  right: 10px;
+}
+
+button.show-header {
+  border-radius: 5px;
+  background-color: rgb(153, 139, 235);
+    border: transparent;  
+}
+
+header.show:hover span {
+  display: inline-block;
+}
+
+button.join-room {
+  margin: 20px auto;
+  display: block;
+  background: #29ea8a;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  font-size: large;
+}
+
+input.join-room {
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 5px;
 }

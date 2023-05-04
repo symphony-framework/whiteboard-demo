@@ -5,11 +5,9 @@ import SquareIcon from '../assets/imgs/icons/Square.png'
 import TriangleIcon from '../assets/imgs/icons/Triangle.png'
 import CircleIcon from '../assets/imgs/icons/Circle.png'
 
-const local ="ws://localhost:8001";
-const demo = 'wss://symphony-demo.diegohernandezramirez.dev'
-let aws ="wss://symphony.diegohernandezramirez.dev/";
+// replace with compatible websocket server: auto-deploy `Symphony-Infrastructure` or locally run `y-websocket`
+export const WS_URL = "";
 
-export const WS_URL = demo
 export const DEFAULT_CANVAS_BACKGROUND = "#f3f3f3"
 
 export const DEFAULT_IMAGE_WIDTH = 480;

@@ -1,0 +1,18 @@
+@font-face {
+  font-family: 'Along Sans s2 Light';
+  src: url('/fonts/AlongSanss2-Light.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Along Sans s2 Bold';
+  src: url('/fonts/AlongSanss2-Bold.otf') format('opentype');
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Along Sans s2 SemiBold';
+  src: url('/fonts/AlongSanss2-SemiBold.otf') format('opentype');
+  font-style: normal;
+}
